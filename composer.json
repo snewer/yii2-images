@@ -1,7 +1,8 @@
 {
   "name": "snewer/yii2-images",
   "license": "BSD-3-Clause",
-  "keywords": ["yii2", "storage"],
+  "keywords": ["yii2", "images"],
+  "type": "yii2-extension",
   "authors": [
     {
       "name": "Kirill Kasyanov",
