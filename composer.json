@@ -1,0 +1,20 @@
+{
+  "name": "snewer/yii2-images",
+  "license": "BSD-3-Clause",
+  "keywords": ["yii2", "storage"],
+  "authors": [
+    {
+      "name": "Kirill Kasyanov",
+      "email": "snewer0@gmail.com"
+    }
+  ],
+  "require": {
+    "yiisoft/yii2": "*",
+    "intervention/image": "^2.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "snewer\\images\\": "src/"
+    }
+  }
+}
