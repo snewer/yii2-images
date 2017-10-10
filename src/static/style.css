@@ -1,0 +1,195 @@
+.imagesWidget.modal .cropper-wrapper {
+    height: 450px;
+    padding: 7px;
+    background-color: #676767;
+}
+
+.imagesWidget.modal .previews {
+    height: 450px;
+    overflow: hidden;
+}
+
+.imagesWidget.modal .previews .preview {
+    height: 80px;
+    text-align: center;
+    white-space: nowrap;
+    padding: 7px;
+    border-top: 1px solid #ccc;
+   /* background-color: #fcfcfc;*/
+    position: relative;
+    cursor: pointer;
+}
+
+.imagesWidget.modal .previews .preview:first-child {
+    border-top: none;
+}
+
+.imagesWidget.modal .previews .preview .arrow {
+    display: none;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    margin-top: -7px;
+    content: '';
+    border-right: 7px solid #676767;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+}
+
+.imagesWidget.modal .previews .preview .delete {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    color: #ffffff;
+    top: 2px;
+    right: 2px;
+    border-radius: 1px;
+    background-color: rgba(0, 0, 0, .1);
+}
+
+.imagesWidget.modal .previews .preview:hover .delete {
+    background-color: rgba(0, 0, 0, .45);
+}
+
+.imagesWidget.modal .previews .preview .delete:hover {
+    background-color: rgba(0, 0, 0, .8);
+}
+
+.imagesWidget.modal .previews .preview.selected .arrow {
+    display: block;
+}
+
+.imagesWidget.modal .previews .preview .helper {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.imagesWidget.modal .previews .preview img {
+    max-width: 100%;
+    max-height: 100%;
+    vertical-align: middle;
+}
+
+/** Disabled state */
+.imagesWidget.modal .previews.disabled .preview img {
+    opacity: 0.4;
+}
+.imagesWidget.modal .previews.disabled * {
+    cursor: default !important;
+}
+.imagesWidget.modal .previews.disabled .delete {
+    display: none;
+}
+
+
+
+.imagesCollection {
+    position: relative;
+    border: 2px dashed #d3d2d2;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+.imagesCollection .images {
+    min-height: 50px;
+    padding: 10px;
+    padding-bottom: 0;
+}
+
+.imagesCollection  .wrapper {
+    display: inline-block;
+    vertical-align: top;
+    width: 100%;
+    padding: 10px;
+}
+
+.imagesCollection  .icontainer {
+    box-shadow: 0 1px 1px 0 #999999;
+    background-color: #ffffff;
+    border-radius: 3px;
+}
+
+.imagesCollection .icontainer .image {
+    padding: 7px;
+    text-align: center;
+}
+
+.imagesCollection .icontainer img {
+    max-width: 100%;
+}
+
+.imagesCollection  .icontainer .toolbar {
+    border-radius: 0 0 3px 3px;
+    background-color: #fcfcfc;
+    padding: 10px 15px 15px 15px;
+}
+
+.imagesCollection  .icontainer .toolbar .edit {
+    float: left;
+}
+
+.imagesCollection  .icontainer .toolbar .remove {
+    float: right;
+}
+
+.imagesCollection  .icontainer .toolbar .edit,
+.imagesCollection  .icontainer .toolbar .remove {
+    color: #BDC3C5;
+    cursor: pointer;
+}
+
+.imagesCollection  .icontainer .toolbar .edit:hover,
+.imagesCollection  .icontainer .toolbar .remove:hover {
+    color: #606B6F;
+}
+
+
+.imagesCollection .loader {
+    margin: 20px;
+    text-align: center;
+    font-size: 120%;
+    color: #d3d2d2;
+    display: none;
+}
+
+
+.imagesCollection .upload-tools {
+    margin: 20px;
+    text-align: center;
+    font-size: 120%;
+    color: #d3d2d2;
+}
+
+.imagesCollection span.clickable {
+    cursor: pointer;
+}
+.imagesCollection span.clickable:hover {
+    color: #337ab7;
+    text-decoration: underline;
+}
+
+
+@media only screen and (min-width : 320px) {
+    .imagesCollection.multiple .wrapper {  width: 100%;  }
+}
+
+@media only screen and (min-width : 480px) {
+    .imagesCollection.multiple .wrapper {  width: 50%;  }
+}
+
+@media only screen and (min-width : 768px) {
+    .imagesCollection.multiple .wrapper {  width: 33.333333%  }
+}
+
+@media only screen and (min-width : 992px) {
+    .imagesCollection.multiple .wrapper {  width:  33.333333%;  }
+}
+
+@media only screen and (min-width : 1200px) {
+    .imagesCollection.multiple .wrapper {  width: 25%;  }
+}
