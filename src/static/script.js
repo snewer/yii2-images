@@ -1,14 +1,13 @@
-
 // https://habrahabr.ru/post/113073/
 // http://stackoverflow.com/questions/5627284/pass-in-an-array-of-deferreds-to-when
 
-(function($){
+(function ($) {
 
     function validateImageFile(file) {
         return file.size > 0 && /^image/.test(file.type);
     }
 
-    $.fn.ImagesWidget = function (options, multiple) {
+    $.fn.ImagesWidget = function (options) {
         // id изображения, открытого в модельном окне в данный момент
         var selectedImageIndex = -1;
         var modalDisabled = false;
@@ -34,12 +33,7 @@
                                             '<div class="cropper-wrapper">' +
                                                 '<img src="#" style="display: none">' +
                                             '</div>' +
-                                           /* '<div style="padding: 15px;">' +
-                                                '<p>Заголовок изображения:</p>' +
-                                                '<p><input type="text" class="form-control"></p>' +
-                                                '<p>Авторские права:</p>' +
-                                                '<p><textarea class="form-control"></textarea></p>' +
-                                            '</div>' +*/
+
                                         '</td>' +
                                     '</tr>' +
                                 '</tbody>' +
@@ -72,11 +66,11 @@
         var rotateLeft = modal.find('.fa-rotate-left');
         var rotateRight = modal.find('.fa-rotate-right');
 
-        rotateRight.on('click', function(){
+        rotateRight.on('click', function () {
             console.log(cropperImage);
             cropperImage.cropper('rotate', 45);
         });
-        rotateLeft.on('click', function(){
+        rotateLeft.on('click', function () {
             cropperImage.cropper('rotate', -45);
         });
 
@@ -97,20 +91,21 @@
             show: false
         });
 
-        function showModal(){
+        function showModal() {
             modal.modal('show');
         }
-        function hideModal(){
+
+        function hideModal() {
             modal.modal('hide');
         }
-        
+
         function disableModal() {
             previews.addClass('disabled');
             modal.find('input, button, textarea').prop('disabled', true);
             cropperImage.cropper('disable');
             modalDisabled = true;
         }
-        
+
         function enableModal() {
             previews.removeClass('disabled');
             modal.find('input, button, textarea').prop('disabled', false);
@@ -120,7 +115,7 @@
 
         function startUploadImages() {
             previews.html('');
-            if(images.length > 1) {
+            if (images.length > 1) {
                 previews.parents('td').first().show();
                 uploadAllBtn.show();
                 modalDialog.addClass('modal-lg');
@@ -129,7 +124,7 @@
                 uploadAllBtn.hide();
                 modalDialog.removeClass('modal-lg');
             }
-            $.each(images, function(index, image){
+            $.each(images, function (index, image) {
                 image.$preview = $(
                     '<div class="preview">' +
                     '<div class="delete">&times;</div>' +
@@ -138,9 +133,9 @@
                     '<img src="' + image.src + '">' +
                     '</div>'
                 );
-                if(index == 0) {
+                if (index == 0) {
                     image.$preview.addClass('selected');
-                    if(cropperIsInit) {
+                    if (cropperIsInit) {
                         cropperImage.cropper('replace', image.src);
                     } else {
                         cropperImage.attr('src', image.src);
@@ -149,42 +144,42 @@
                             checkCrossOrigin: false,
                             guides: false,
                             checkOrientation: false,
-                            crop: function() {
+                            crop: function () {
                                 images[selectedImageIndex].crop = $(this).cropper('getData', true);
                             }
                         });
                         cropperIsInit = true;
                     }
                 }
-                image.$preview.on('click', function(){
-                    if(modalDisabled) return;
+                image.$preview.on('click', function () {
+                    if (modalDisabled) return;
                     selectedImageIndex = index;
                     //var image = images[index];
                     cropperImage.cropper('replace', image.src);
                     // если ранее изображение обрезали - устанавливаем эти параметры
-                    if(image.crop) {
+                    if (image.crop) {
                         cropperImage.cropper('setData', image.crop);
                     }
                     previews.find('.selected').removeClass('selected');
                     $(this).addClass('selected');
                 });
-                image.$preview.find('.delete').on('click', function(){
-                    if(modalDisabled) return;
+                image.$preview.find('.delete').on('click', function () {
+                    if (modalDisabled) return;
                     image.deleted = true;
                     image.src = '';
                     image.$preview.remove();
-                    if(index == selectedImageIndex) {
+                    if (index == selectedImageIndex) {
                         var imageClicked = false;
                         for (var i = index; i < images.length; ++i) {
-                            if(!images[i].deleted) {
+                            if (!images[i].deleted) {
                                 images[i].$preview.click();
                                 imageClicked = true;
                                 break;
                             }
                         }
                         if (!imageClicked) {
-                            for(i = index; i >= 0; --i) {
-                                if(!images[i].deleted) {
+                            for (i = index; i >= 0; --i) {
+                                if (!images[i].deleted) {
                                     images[i].$preview.click();
                                     imageClicked = true;
                                     break;
@@ -217,109 +212,75 @@
                     supportAC: options.supportAC,
                     crop: image.crop || {}
                 }
-            }).done(function(uploadRes){
+            }).done(function (uploadRes) {
                 // ставим метку, что изображение успешно загружено и очищаем src
                 image.uploaded = true;
                 image.src = '';
 
-                if(uploadRes.success === true){
+                if (uploadRes.success === true) {
                     showUploadedImageInCollection(uploadRes);
-                    // если можно загружать несколько изображений - они объеденяются в коллекцию
-                    if(multiple) {
-                        // проверяем, есть ли созданная коллеция
-                        if(input.val() > 0){
-                            $.post(options.urls.addImageToCollection, {
-                                image_id: uploadRes.original.id,
-                                collection_id: input.val()
-                            }).done(function(){
-                                def.resolve(uploadRes);
-                            }).fail(function(q){
-                                def.reject('Не удалось добавить изображение в коллекцию');
-                            });
-                        } else {
-                            // создаем новую коллекцию
-                            $.post(options.urls.createImagesCollection).done(function(res){
-                                if (res.success === true) {
-                                    input.val(res.id);
-                                    $.post(options.urls.addImageToCollection, {
-                                        image_id: uploadRes.original.id,
-                                        collection_id: res.id
-                                    }).done(function() {
-                                        def.resolve();
-                                    }).fail(function() {
-                                        def.reject('Не удалось добавить изображение в коллекцию');
-                                    });
-                                } else {
-                                    def.reject('Не удалось создать коллекцию');
-                                }
-                            }).fail(function(){
-                                def.reject('Не удалось создать коллекцию');
-                            });
-                        }
-                    } else {
-                        input.val(uploadRes.original.id);
-                        def.resolve(uploadRes);
-                    }
+                    input.val(uploadRes.original.id);
+                    def.resolve(uploadRes);
                 } else {
                     def.reject();
                 }
-            }).fail(function() {
+            }).fail(function () {
                 def.reject('Не удалось загрузить изображение');
             });
             return def.promise();
         }
 
         // загрузка одного изображения
-        uploadBtn.on('click', function(){
+        uploadBtn.on('click', function () {
             var _this = $(this);
             disableModal();
             _this.ladda('start');
             _this.find('.ladda-label').text('Идет загрузка...');
             if (selectedImageIndex >= 0) {
-                uploadImage(images[selectedImageIndex]).done(function(){
+                uploadImage(images[selectedImageIndex]).done(function () {
                     enableModal();
                     _this.find('.ladda-label').text('Загрузить');
                     _this.ladda('stop');
                     // если в массиве есть не загруженное и не удаленное изображение
                     // то не закрываем модальное окно
                     // иначе - закрываем.
-                    for(var i = 0; i < images.length; ++i){
-                        if(!images[i].deleted && !images[i].uploaded) {
+                    for (var i = 0; i < images.length; ++i) {
+                        if (!images[i].deleted && !images[i].uploaded) {
                             return;
                         }
                     }
                     hideModal();
-                }).fail(function(){
+                }).fail(function () {
                     alert('Загрузить изображене не удалось');
                 });
             }
         });
 
-        uploadAllBtn.on('click', function(){
+        uploadAllBtn.on('click', function () {
             var _this = $(this);
             disableModal();
             _this.ladda('start');
             _this.find('.ladda-label').text('Идет загрузка...');
             var promises = [];
-            for(var i = 0; i < images.length; ++i){
-                if(!images[i].deleted && !images[i].uploaded) {
+            for (var i = 0; i < images.length; ++i) {
+                if (!images[i].deleted && !images[i].uploaded) {
                     promises.push(uploadImage(images[i]));
                 }
             }
-            $.when.apply($, promises).done(function(){
+            $.when.apply($, promises).done(function () {
                 enableModal();
                 _this.find('.ladda-label').text('Загрузить все');
                 _this.ladda('stop');
                 // если в массиве есть не загруженное и не удаленное изображение
                 // то не закрываем модальное окно
                 // иначе - закрываем.
-                for(var i = 0; i < images.length; ++i){
-                    if(!images[i].deleted && !images[i].uploaded) {
+                for (var i = 0; i < images.length; ++i) {
+                    if (!images[i].deleted && !images[i].uploaded) {
                         return;
                     }
                 }
                 hideModal();
-            }).fail(function(msg){
+            }).fail(function (msg) {
                 alert(msg);
             });
         });
@@ -332,9 +293,7 @@
             '<span class="clickable select2">или по URL</span>' +
             '</div>' +
             '</div>');
-        if(multiple) {
-            $collection.addClass('multiple');
-        }
+
         var $imagesCollectionContainer = $collection.find('.images');
 
         input.after($collection);
@@ -343,7 +302,7 @@
         function updateSorting() {
             var $imagesCollectionImages = $imagesCollectionContainer.find('.wrapper');
             var data = {};
-            $.each($imagesCollectionImages, function(){
+            $.each($imagesCollectionImages, function () {
                 data[$(this).data('id')] = $(this).index();
             });
             $.post(options.urls.sortImagesCollection, {
@@ -352,18 +311,11 @@
             });
         }
 
-        if (multiple) {
-            $imagesCollectionContainer.sortable({
-                update: function() {
-                    updateSorting();
-                }
-            });
-        }
 
         function readImageFile(file) {
             var def = $.Deferred();
             var fr = new FileReader;
-            fr.onload = function(res){
+            fr.onload = function (res) {
                 images.push({src: res.target.result});
                 def.resolve();
             };
@@ -371,12 +323,11 @@
             return def.promise();
         }
 
-        $collection.find('.select1').on('click', function() {
+        $collection.find('.select1').on('click', function () {
             var $fileInput = $('<input type="file" style="display:none">');
-            $fileInput.prop('multiple', multiple);
             images = [];
             $('body').append($fileInput);
-            $fileInput.on('change', function(){
+            $fileInput.on('change', function () {
                 var files = this.files;
                 var defs = [];
                 for (var i = 0; i < files.length; ++i) {
@@ -384,47 +335,47 @@
                         defs.push(readImageFile(files[i]));
                     }
                 }
-                $.when.apply($, defs).done(function() {
+                $.when.apply($, defs).done(function () {
                     startUploadImages();
                 });
                 $fileInput.remove();
             });
             $fileInput.click();
         });
-        
+
         function uploadImageFromURL(url) {
-            return $.post(options.urls.imageProxy, {url: url}, function(res){
-                if(res.success){
-                    images = [{src:res.base64}];
+            return $.post(options.urls.imageProxy, {url: url}, function (res) {
+                if (res.success) {
+                    images = [{src: res.base64}];
                     startUploadImages();
                 }
             }, 'json');
         }
 
-        $collection.find('.select2').on('click', function(){
+        $collection.find('.select2').on('click', function () {
             var url = prompt('Введите ссылку на изображение', 'http://');
-            if(url && url != 'http://'){
+            if (url && url != 'http://') {
                 uploadImageFromURL(url);
             }
         });
 
-        $collection[0].ondragover = function() {
+        $collection[0].ondragover = function () {
             return false;
         };
-        $collection[0].ondragleave = function() {
+        $collection[0].ondragleave = function () {
             return false;
         };
-        $collection[0].ondrop = function(e) {
+        $collection[0].ondrop = function (e) {
             var files = e.dataTransfer.files;
-            if(files) {
+            if (files) {
                 var defs = [];
                 for (var i = 0; i < files.length; ++i) {
                     if (validateImageFile(files[i])) {
                         defs.push(readImageFile(files[i]));
                     }
                 }
-                $.when.apply($, defs).done(function() {
-                    if(images.length) {
+                $.when.apply($, defs).done(function () {
+                    if (images.length) {
                         startUploadImages();
                     }
                 });
@@ -450,11 +401,9 @@
                 // @formatter:on
             );
 
-            if (multiple) {
-                $imagesCollectionContainer.append($elem);
-            } else {
-                $imagesCollectionContainer.html($elem);
-            }
+
+            $imagesCollectionContainer.html($elem);
+
 
             var $img = $elem.find('img');
             var $deleteBtn = $elem.find('.remove');
@@ -468,60 +417,41 @@
                 tooltip: false,
                 navbar: false,
                 button: false,
-                show: function(){
+                show: function () {
                     // костыль для закрытия просмотра изображения
                     // при клике по фону
                     var viewer = $('.viewer-canvas');
                     var _this = $(this);
-                    viewer.on('click', function(event){
-                        if(event.target.tagName == 'IMG') return;
+                    viewer.on('click', function (event) {
+                        if (event.target.tagName == 'IMG') return;
                         _this.viewer('hide');
                     });
                 }
             });
 
-            if (multiple) {
-                $deleteBtn.on('click', function(){
-                    if(!confirm('Удалить?')) return;
-                    $.post(options.urls.deleteImageFromCollection, {
-                        image_id: image.original.id,
-                        collection_id: input.val()
-                    });
-                    $elem.remove();
-                });
 
-            } else {
-                $deleteBtn.on('click', function(){
-                    if(!confirm('Удалить?')) return;
-                    input.val('');
-                    $elem.remove();
-                });
+            $deleteBtn.on('click', function () {
+                if (!confirm('Удалить?')) return;
+                input.val('');
+                $elem.remove();
+            });
 
-            }
 
-            $cropBtn.on('click', function(){
+            $cropBtn.on('click', function () {
                 uploadImageFromURL(image.original.url);
                 //$elem.remove();
             });
 
         }
 
-        if(input.val() > 0){
-            if(multiple){
-                $.post(options.urls.getImagesCollection, {id: input.val()}, function(res){
-                    if(res.success === true && res.images.length > 0){
-                        for(var i = 0; i < res.images.length; ++i){
-                            showUploadedImageInCollection(res.images[i]);
-                        }
-                    }
-                }, 'json');
-            } else {
-                $.post(options.urls.getImage, {id: input.val()}, function(res){
-                    if(res.success === true){
-                        showUploadedImageInCollection(res);
-                    }
-                }, 'json');
-            }
+        if (input.val() > 0) {
+
+            $.post(options.urls.getImage, {id: input.val()}, function (res) {
+                if (res.success === true) {
+                    showUploadedImageInCollection(res);
+                }
+            }, 'json');
+
         }
 
     };

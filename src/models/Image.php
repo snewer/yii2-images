@@ -48,7 +48,7 @@ class Image extends ActiveRecord
     public $originalUploadStorageId = 1;
     public $previewUploadStorageId = 1;
 
-    public $imageDriver = 'Imagick';
+    public $imageDriver = 'GD';
     public $canvasBgColor = '#FFFFFF';
 
     private $_source = false;
@@ -239,13 +239,12 @@ class Image extends ActiveRecord
         ));
         $this->_source = $resultSource;
 
-        $path = Yii::$app->{$this->storageComponentName}->upload(
-            $this->originalUploadStorageId,
-            $resultSource,
-            $options['supportAC'] === "true" || $options['supportAC'] === true ? 'png' : 'jpg'
-        );
+        $storageManager = Yii::$app->{$this->storageComponentName};
+        /* @var $storage \snewer\storage\AbstractStorage */
+        $storage = $storageManager->getStorageById($this->originalUploadStorageId);
+        $path = $storage->upload($resultSource, $options['supportAC'] === "true" || $options['supportAC'] === true ? 'png' : 'jpg');
 
-        $this->parent_id = 0;
+        $this->parent_id = null;
         $this->quality = 90;
         $this->width = $width;
         $this->height = $height;
@@ -305,7 +304,10 @@ class Image extends ActiveRecord
         // которые пропадают при передаче файла в некоторые хранилища (selectel)
         // и md5 хэши после этого не совпадают!!!
         $resultSource = trim($image->encode('jpeg', $preview->quality));
-        $path = Yii::$app->{$this->storageComponentName}->upload($this->previewUploadStorageId, $resultSource, 'jpg');
+        $storageManager = Yii::$app->{$this->storageComponentName};
+        /* @var $storage \snewer\storage\AbstractStorage */
+        $storage = $storageManager->getStorageById($this->previewUploadStorageId);
+        $path = $storage->upload($resultSource, 'jpg');
         $preview->parent_id = $this->id;
         $preview->quality = 90;
         $preview->width = $needleWidth;
