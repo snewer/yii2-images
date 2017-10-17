@@ -9,7 +9,8 @@ use yii\helpers\Url;
 use yii\helpers\Json;
 use snewer\images\Asset;
 
-class ImageWidget extends InputWidget {
+class ImageWidget extends InputWidget
+{
 
     public $urls = [];
 
@@ -21,17 +22,23 @@ class ImageWidget extends InputWidget {
     public $maxHeight = 0;
     public $supportAC = false;
 
+    public $cropperAsset = 'snewer\images\CropperAsset';
+
     protected $multiple = true;
 
-    private function getInput(){
+    private function getInput()
+    {
         $name = $this->hasModel() ? Html::getInputName($this->model, $this->attribute) : $this->name;
         $value = $this->hasModel() ? Html::getAttributeValue($this->model, $this->attribute) : $this->value;
         return Html::hiddenInput($name, $value, $this->options);
     }
 
-    public function run(){
+    public function run()
+    {
 
-        Asset::register($this->view);
+        $asset = new Asset();
+        $asset->depends[] = $this->cropperAsset;
+        $asset->registerAssetFiles($this->view);
 
         $options = [
             'urls' => [
@@ -44,13 +51,13 @@ class ImageWidget extends InputWidget {
                 'imageUpload' => Url::to(['images/image/upload']),
                 'sortImagesCollection' => Url::to(['images/collection/sort']),
             ],
-            'trim' => (bool) $this->trim,
-            'aspectRatio' => (float) $this->aspectRatio,
-            'minWidth' => (int) $this->minWidth,
-            'minHeight' => (int) $this->minHeight,
-            'maxWidth' => (int) $this->maxWidth,
-            'maxHeight' => (int) $this->maxHeight,
-            'supportAC' => (bool) $this->supportAC,
+            'trim' => (bool)$this->trim,
+            'aspectRatio' => (float)$this->aspectRatio,
+            'minWidth' => (int)$this->minWidth,
+            'minHeight' => (int)$this->minHeight,
+            'maxWidth' => (int)$this->maxWidth,
+            'maxHeight' => (int)$this->maxHeight,
+            'supportAC' => (bool)$this->supportAC,
         ];
 
         /*$hashData = json_encode([
