@@ -2,6 +2,7 @@
 
 namespace snewer\images\controllers;
 
+use snewer\images\models\ImageUpload;
 use Yii;
 use yii\web\Controller;
 use yii\web\Response;
@@ -14,16 +15,16 @@ class ImageController extends Controller
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
         $source = Yii::$app->request->post('source');
-        $title = Yii::$app->request->post('title');
-        $description = Yii::$app->request->post('description');
         $options = Yii::$app->request->post('options');
         /* @var $module \snewer\images\Module */
         $module = Yii::$app->controller->module;
         /* @var $storage \snewer\storage\StorageManager */
-        $storage = Yii::$app->{$module->storageComponentName};
-        $image = new Image();
-        $image->title = $title;
-        $image->description = $description;
+
+        $imageUpload = ImageUpload::load($source);
+        $image = $imageUpload->upload('images');
+
+        /*$storage = Yii::$app->{$module->storageComponentName};
+        $image = new $module->imagesStoreStorageName;
         $image->originalUploadStorageId = $storage->getStorageIdByName($module->imagesStoreStorageName);
         $image->previewUploadStorageId = $storage->getStorageIdByName($module->previewsStoreStorageName);
         if ($image->upload($source, $options, $module->previews)) {
@@ -49,7 +50,7 @@ class ImageController extends Controller
             return [
                 'success' => false
             ];
-        }
+        }*/
     }
 
     public function actionGet()

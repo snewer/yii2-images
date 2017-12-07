@@ -15,4 +15,6 @@ class Module extends \yii\base\Module
 
     public $graphicsLibrary = 'GD';
 
+    public $imageModel = 'snewer\images\models\Image';
+
 }
