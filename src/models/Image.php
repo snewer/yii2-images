@@ -15,6 +15,7 @@ use yii\helpers\ArrayHelper;
  *
  * From database:
  * @property $id
+ * @property $preview_type
  * @property $parent_id
  * @property $storage_id
  * @property $path
@@ -31,11 +32,14 @@ use yii\helpers\ArrayHelper;
  * via magic:
  * @property $url
  * @property $previews
- * @property \snewer\storage\StorageManager $storage
+ * @property \snewer\storage\AbstractStorage $storage
+ * @property string $storageName
  * @property string $source
  */
 class Image extends ActiveRecord
 {
+
+    public $moduleName = 'images';
 
     private $_source = false;
 
@@ -60,23 +64,35 @@ class Image extends ActiveRecord
         return '{{%images}}';
     }
 
+    private $_storageName;
+
+    public function getStorageName()
+    {
+        if ($this->_storageName === null) {
+            $storageModel = ImageStorage::findById($this->storage_id, true);
+            $this->_storageName = $storageModel->name;
+        }
+        return $this->_storageName;
+    }
+
     /**
-     * @return \snewer\storage\StorageManager
+     * @return \snewer\storage\AbstractStorage
      */
     public function getStorage()
     {
-        return Yii::$app->get('storage', true);
+        $storage = Yii::$app->get('storage', true);
+        return $storage->getStorage($this->storageName);
     }
 
     public function getUrl()
     {
-        return $this->getStorage()->getStorageById($this->storage_id)->getUrl($this->path);
+        return $this->storage->getUrl($this->path);
     }
 
     public function getSource()
     {
         if ($this->_source === false) {
-            $this->_source = $this->getStorage()->getStorageById($this->storage_id)->getSource($this->path);
+            $this->_source = $this->storage->getSource($this->path);
         }
         return $this->_source;
     }
@@ -86,14 +102,14 @@ class Image extends ActiveRecord
         $this->_source = $source;
     }
 
-
     /**
      * Поддерживает ли данное изображение альфа-канал.
      * То есть имеет ли изображение формат PNG.
      */
     public function isSupportsAC()
     {
-        return array_pop(explode('.', $this->path)) == 'png';
+        $path = explode('.', $this->path);
+        return array_pop($path) == 'png';
     }
 
     /**
@@ -101,22 +117,26 @@ class Image extends ActiveRecord
      */
     public function getPreviews()
     {
-        return $this->hasMany(self::className(), ['parent_id' => 'id'])->orderBy('quality DESC');
+        return $this
+            ->hasMany(self::className(), ['parent_id' => 'id'])
+            ->andWhere('deleted = 0')
+            ->orderBy('quality DESC');
     }
 
     /**
      * Метод для получения существующего превью изображения
-     * заданного размера, и, возможно, заданного качества.
+     * заданного размера и типа.
      * Вернется false, если првеью не существует.
      * @param $width
      * @param $height
+     * @param $type
      * @return bool|Image
      */
-    private function getPreview($width, $height)
+    private function getPreview($width, $height, $type = ImageUpload::RESIZE_BOX)
     {
         foreach ($this->previews as $preview) {
             /* @var $preview self */
-            if ($preview->width == $width && $preview->height == $height) {
+            if ($preview->width == $width && $preview->height == $height /*&& $preview->preview_type == $type*/) {
                 return $preview;
             }
         }
@@ -128,21 +148,22 @@ class Image extends ActiveRecord
      * Если превью не будет найдено, то оно будет создано.
      * @param $width
      * @param $height
+     * @param $type
      * @return Image
      */
-    public function getOrCreatePreview($width = 0, $height = 0)
+    public function getOrCreatePreview($width = 0, $height = 0, $type = ImageUpload::RESIZE_BOX)
     {
-        if ($width == 0 && $height == 0) {
-            throw new InvalidCallException('Для превью необходимо указать ширину или высоту.');
-        } elseif ($width == 0) {
+        if ($width <= 0 && $height <= 0) {
+            throw new InvalidCallException('Для превью необходимо указать ширину и/или высоту.');
+        } elseif ($width <= 0) {
             $width = ceil($height * $this->width / $this->height);
-        } elseif ($height == 0) {
+        } elseif ($height <= 0) {
             $height = ceil($width * $this->height / $this->width);
         }
-        $preview = $this->getPreview($width, $height);
+        $preview = $this->getPreview($width, $height, $type);
         if (!$preview) {
-            // создаем новую preview и добавляем ее в _related свойство ActiveRecord
-            $preview = $this->createPreview($width, $height);
+            // Создаем новую preview и добавляем ее в _related свойство ActiveRecord
+            $preview = $this->createPreview($width, $height, $type);
             $relatedPreviews = $this->previews ?: [];
             $relatedPreviews[] = $preview;
             $this->populateRelation('previews', $relatedPreviews);
@@ -150,14 +171,27 @@ class Image extends ActiveRecord
         return $preview;
     }
 
-    public function createPreview($width, $height, $storageName)
+    public function createPreview($width, $height, $type = ImageUpload::RESIZE_BOX)
     {
         $previewImageUploader = ImageUpload::load($this->source);
-        // todo: resize
-        $previewImage = $previewImageUploader->upload($storageName);
+        $previewImageUploader->resize($width, $height, $type);
+        if (isset(Yii::$app->modules[$this->moduleName])) {
+            $module = Yii::$app->modules[$this->moduleName];
+            $previewImage = $previewImageUploader->upload(
+            // Подгружаем информацию о месте хранения и качестве превью из модуля изображений.
+                is_object($module) ? $module->previewsStoreStorageName : $module['previewsStoreStorageName'],
+                $this->isSupportsAC(),
+                is_object($module) ? $module->previewsQuality : $module['previewsQuality']
+            );
+        } else {
+            $previewImage = $previewImageUploader->upload($this->storageName, $this->isSupportsAC(), 90);
+        }
+        $previewImage->parent_id = $this->id;
+        $previewImage->save(false);
         $relatedPreviews = $this->previews ?: [];
-        $relatedPreviews[] = $preview;
+        $relatedPreviews[] = $previewImage;
         $this->populateRelation('previews', $relatedPreviews);
+        return $previewImage;
     }
 
 }

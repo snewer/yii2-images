@@ -39,16 +39,13 @@
                                 '</tbody>' +
                             '</table>' +
                         '<div class="modal-footer" style="border-top: none">' +
-                            '<button class="btn btn-primary"><span class="fa fa-rotate-left"></span></button>' +
-                            '<button class="btn btn-primary"><span class="fa fa-rotate-right"></span></button>' +
+                            '<button type="button" class="btn btn-primary"><span class="fa fa-rotate-left"></span></button>' +
+                            '<button type="button" class="btn btn-primary"><span class="fa fa-rotate-right"></span></button>' +
                         '</div>' +
                         '<div class="modal-footer" style="border-top: none">' +
                             '<button type="button" class="btn btn-white cancelUpload" data-dismiss="modal">Отмена</button>' +
                             '<button type="button" class="btn btn-primary ladda-button upload" data-style="expand-right">' +
                                 'Зарузить выбранное' +
-                            '</button>' +
-                            '<button type="button" class="btn btn-primary ladda-button uploadAll" data-style="expand-right">' +
-                                'Зарузить все' +
                             '</button>' +
                         '</div>' +
                     '</div>' +
@@ -59,7 +56,6 @@
 
         var uploadBtn = modal.find('.upload').first();
         var cancelUploadBtn = modal.find('.cancelUpload').first();
-        var uploadAllBtn = modal.find('.uploadAll').first();
         var modalDialog = modal.find('.modal-dialog').first();
         var previews = modal.find('.previews').first();
         var cropperImage = modal.find('.cropper-wrapper img').first();
@@ -82,7 +78,6 @@
             size: '5px'
         });
         uploadBtn.ladda();
-        uploadAllBtn.ladda();
         // инициализируем модальное окно
         input.after(modal);
         modal.modal({
@@ -117,11 +112,9 @@
             previews.html('');
             if (images.length > 1) {
                 previews.parents('td').first().show();
-                uploadAllBtn.show();
                 modalDialog.addClass('modal-lg');
             } else {
                 previews.parents('td').first().hide();
-                uploadAllBtn.hide();
                 modalDialog.removeClass('modal-lg');
             }
             $.each(images, function (index, image) {
@@ -219,7 +212,7 @@
 
                 if (uploadRes.success === true) {
                     showUploadedImageInCollection(uploadRes);
-                    input.val(uploadRes.original.id);
+                    input.val(uploadRes.image.id);
                     def.resolve(uploadRes);
                 } else {
                     def.reject();
@@ -254,35 +247,6 @@
                     alert('Загрузить изображене не удалось');
                 });
             }
-        });
-
-        uploadAllBtn.on('click', function () {
-            var _this = $(this);
-            disableModal();
-            _this.ladda('start');
-            _this.find('.ladda-label').text('Идет загрузка...');
-            var promises = [];
-            for (var i = 0; i < images.length; ++i) {
-                if (!images[i].deleted && !images[i].uploaded) {
-                    promises.push(uploadImage(images[i]));
-                }
-            }
-            $.when.apply($, promises).done(function () {
-                enableModal();
-                _this.find('.ladda-label').text('Загрузить все');
-                _this.ladda('stop');
-                // если в массиве есть не загруженное и не удаленное изображение
-                // то не закрываем модальное окно
-                // иначе - закрываем.
-                for (var i = 0; i < images.length; ++i) {
-                    if (!images[i].deleted && !images[i].uploaded) {
-                        return;
-                    }
-                }
-                hideModal();
-            }).fail(function (msg) {
-                alert(msg);
-            });
         });
 
         var $collection = $('<div class="imagesCollection">' +
@@ -386,10 +350,10 @@
         function showUploadedImageInCollection(image) {
             var $elem = $(
                 // @formatter:off
-                '<div class="wrapper" data-id="' + image.original.id + '">' +
+                '<div class="wrapper" data-id="' + image.image.id + '">' +
                     '<div class="icontainer">' +
                         '<div class="image">' +
-                            '<img data-src="' + image.original.url + '" src="' + image.preview.url + '" style="cursor: -webkit-zoom-in; cursor: zoom-in">' +
+                            '<img data-src="' + image.image.url + '" src="' + image.preview.url + '" style="cursor: -webkit-zoom-in; cursor: zoom-in">' +
                         '</div>' +
                         '<div class="toolbar">' +
                             '<span title="Обрезать изображение" class="edit glyphicon glyphicon-pencil"></span>' +
@@ -408,27 +372,6 @@
             var $img = $elem.find('img');
             var $deleteBtn = $elem.find('.remove');
             var $cropBtn = $elem.find('.edit');
-            var viewer = $img.viewer({
-                url: 'data-src',
-                maxZoomRatio: 2,
-                minZoomRatio: 0.3,
-                title: false,
-                toolbar: false,
-                tooltip: false,
-                navbar: false,
-                button: false,
-                show: function () {
-                    // костыль для закрытия просмотра изображения
-                    // при клике по фону
-                    var viewer = $('.viewer-canvas');
-                    var _this = $(this);
-                    viewer.on('click', function (event) {
-                        if (event.target.tagName == 'IMG') return;
-                        _this.viewer('hide');
-                    });
-                }
-            });
-
 
             $deleteBtn.on('click', function () {
                 if (!confirm('Удалить?')) return;
@@ -438,7 +381,7 @@
 
 
             $cropBtn.on('click', function () {
-                uploadImageFromURL(image.original.url);
+                uploadImageFromURL(image.image.url);
                 //$elem.remove();
             });
 

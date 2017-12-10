@@ -18,9 +18,9 @@ class Asset extends AssetBundle
 
     public $depends = [
         'yii\web\JqueryAsset',
-        'common\assets\CropperAsset',
-        'common\assets\LaddaAsset',
-        'common\assets\ViewerAsset',
+        //'common\assets\CropperAsset',
+        //'common\assets\LaddaAsset',
+        //'common\assets\ViewerAsset',
     ];
 
 }

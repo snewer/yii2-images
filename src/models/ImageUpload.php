@@ -14,6 +14,8 @@ class ImageUpload
     // максимальный размер стороны изображения
     const MAX_SIZE = 10000;
 
+    const RESIZE_BOX = 1;
+
     /**
      * @var \Intervention\Image\Image
      */
@@ -56,6 +58,7 @@ class ImageUpload
         if ($this->_driver == 'Imagick') {
             $this->_image->getCore()->setImagePage($this->_image->width(), $this->_image->height(), 0, 0);
         }
+        return $this;
     }
 
     public function crop($x, $y, $width, $height)
@@ -81,6 +84,7 @@ class ImageUpload
             $height = $imageHeight;
         }
         $this->_image->crop($width, $height, $x, $y);
+        return $this;
     }
 
     /**
@@ -88,13 +92,20 @@ class ImageUpload
      * @param array $away
      * @param int $tolerance
      * @param int $feather
+     * @return self
      */
     public function trim($base = 'top-left', $away = ['top', 'bottom', 'left', 'right'], $tolerance = 0, $feather = 0)
     {
         $this->_image->trim($base, $away, $tolerance, $feather);
+        return $this;
     }
 
     /**
+     * Изменяет размер изображения по следующему правилу:
+     * 1) Изображение не должно быть меньше $minWidth x $minHeight
+     * 2) Изображение не должно быть больше $maxWidth x $maxHeight
+     * 3) Соотношение сторон должно быть равным $aspectRatio
+     * 4) Изображение помещается в контейнер размером $width х $height
      * @param $width
      * @param $height
      * @param int $minWidth
@@ -103,8 +114,18 @@ class ImageUpload
      * @param int $maxHeight
      * @param int $aspectRatio
      * @param string $bgColor
+     * @return self
      */
-    public function resize($width = 0, $height = 0, $minWidth = self::MIN_SIZE, $minHeight = self::MIN_SIZE, $maxWidth = self::MAX_SIZE, $maxHeight = self::MAX_SIZE, $aspectRatio = 1, $bgColor = '#FFFFFF')
+    public function resizeToBox(
+        $width = 0,
+        $height = 0,
+        $minWidth = self::MIN_SIZE,
+        $minHeight = self::MIN_SIZE,
+        $maxWidth = self::MAX_SIZE,
+        $maxHeight = self::MAX_SIZE,
+        $aspectRatio = 0,
+        $bgColor = '#FFFFFF'
+    )
     {
         // на данном этапе изображение, полученное после возможных crop и trim операций считаем оригинальным.
         $this->_imageWidth = $this->_image->width();
@@ -118,12 +139,9 @@ class ImageUpload
         } else {
             if ($aspectRatio > 0) {
                 // явно указано требуемое соотношение сторон полотна
-                $canvasAR = floatval($aspectRatio);
+                $canvasAR = $aspectRatio;
             } else {
-                $w = max($this->_imageWidth, $minWidth);
-                $h = max($this->_imageHeight, $minHeight);
-                $canvasAR = $w / $h;
-                unset($w, $h);
+                $canvasAR = max($this->_imageWidth, $minWidth) / max($this->_imageHeight, $minHeight);
             }
             // считаем размеры полотна.
             if ($originalAR >= $canvasAR) {
@@ -167,42 +185,39 @@ class ImageUpload
             $this->_image->resize($this->_imageWidth, $this->_imageHeight);
         }
 
-        // todo: также сделать следующий вариант изменения размера:
-        // исходное изображение изменяется до размера $needleWidth х $needleHeight
-        // искажается и затемняется. далее исходное изображение накладывается на это изображение
         $this->_image->resizeCanvas($canvasWidth, $canvasHeight, 'center', false, $bgColor);
+        return $this;
+    }
+
+    public function resize($width, $height, $type)
+    {
+        return $this->resizeToBox($width, $height);
     }
 
     /**
      * @param string $storageName - Название хранилища, в которое необходимо загрузить изображение
-     * @param bool $supportAC
-     * @param array $withPreviews
-     * @param string $previewsStorageName
+     * @param bool $supportAC - Нужна ли поддержка альфа канала
+     * @param integer $quality - Качество изображения
      * @return Image
      */
-    public function upload($storageName, $supportAC = false, array $withPreviews = [], $previewsStorageName = null)
+    public function upload($storageName, $supportAC = false, $quality = 90)
     {
         $image = new Image();
+        $storageModel = ImageStorage::findOrCreateByName($storageName);
+        $image->storage_id = $storageModel->id;
         // Была обнаружена проблема, когда md5 хэш файла не совпадал с хэшем файла,
         // который загружается в облачное хранилище по http. Trim решает проблему.
-        $source = trim($this->_image->encode($supportAC ? 'png' : 'jpeg', 90));
-        $path = $image->storage->upload($storageName, $source, $supportAC ? 'png' : 'jpg');
+        $source = trim($this->_image->encode($supportAC ? 'png' : 'jpeg', $quality));
+        $path = $image->storage->upload($source, $supportAC ? 'png' : 'jpg');
         $image->path = $path;
         $image->etag = md5($source);
         $image->parent_id = null;
         $image->quality = 90;
         $image->width = $this->_image->width();
         $image->height = $this->_image->height();
-        $image->storage_id = $image->storage->getStorageIdByName($storageName);
         $image->source = $source;
-        $image->save(false);
-        // Добавляем preview изображения
-        foreach ($withPreviews as $preview) {
-            if (!isset($preview[0], $preview[1])) {
-                throw new InvalidCallException('Структура массива неверная, элементы массива должны иметь вид [ширина, высота].');
-            }
-            $image->createPreview($preview[0], $preview[1], $previewsStorageName ?: $storageName);
-        }
+        $image->deleted = 0;
+        //$image->save(false);
         return $image;
     }
 

@@ -13,44 +13,56 @@ class ImageController extends Controller
 
     public function actionUpload()
     {
-        Yii::$app->response->format = Response::FORMAT_JSON;
         $source = Yii::$app->request->post('source');
         $options = Yii::$app->request->post('options');
         /* @var $module \snewer\images\Module */
         $module = Yii::$app->controller->module;
         /* @var $storage \snewer\storage\StorageManager */
-
         $imageUpload = ImageUpload::load($source);
-        $image = $imageUpload->upload('images');
 
-        /*$storage = Yii::$app->{$module->storageComponentName};
-        $image = new $module->imagesStoreStorageName;
-        $image->originalUploadStorageId = $storage->getStorageIdByName($module->imagesStoreStorageName);
-        $image->previewUploadStorageId = $storage->getStorageIdByName($module->previewsStoreStorageName);
-        if ($image->upload($source, $options, $module->previews)) {
-            $preview = $image->getOrCreatePreview(300, 300);
-            return [
-                'success' => true,
-                'original' => [
-                    'id' => $image->id,
-                    'url' => $image->url,
-                    'etag' => $image->etag,
-                    'width' => $image->width,
-                    'height' => $image->height,
-                    'title' => $image->title,
-                    'description' => $image->description
-                ],
-                'preview' => [
-                    'url' => $preview->url,
-                    'width' => $preview->width,
-                    'height' => $preview->height
-                ]
-            ];
-        } else {
-            return [
-                'success' => false
-            ];
-        }*/
+        if (isset($options['crop']['rotate'])) {
+            $imageUpload->rotate($options['crop']['rotate'], $options['bgColor']);
+        }
+        if (isset($options['crop']['width'], $options['crop']['height'], $options['crop']['x'], $options['crop']['y'])) {
+            $imageUpload->crop(
+                $options['crop']['x'],
+                $options['crop']['y'],
+                $options['crop']['width'],
+                $options['crop']['height']
+            );
+        }
+        if ($options['trim'] === true || $options['trim'] == 'true') {
+            $imageUpload->trim();
+        }
+        $imageUpload->resizeToBox(
+            0,
+            0,
+            $options['minWidth'],
+            $options['minHeight'],
+            $options['maxWidth'],
+            $options['maxHeight'],
+            $options['aspectRatio'],
+            $options['bgColor']
+        );
+        $image = $imageUpload->upload($module->imagesStoreStorageName, false, $module->imagesQuality);
+        $image->save(false);
+        $preview = $image->getOrCreatePreview(300, 300);
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        return [
+            'success' => true,
+            'image' => [
+                'id' => $image->id,
+                'url' => $image->url,
+                'etag' => $image->etag,
+                'width' => $image->width,
+                'height' => $image->height
+            ],
+            'preview' => [
+                'url' => $preview->url,
+                'width' => $preview->width,
+                'height' => $preview->height
+            ]
+        ];
     }
 
     public function actionGet()
@@ -63,11 +75,9 @@ class ImageController extends Controller
             if ($image) {
                 return [
                     'success' => true,
-                    'original' => [
+                    'image' => [
                         'id' => $image->id,
                         'url' => $image->url,
-                        'title' => $image->title,
-                        'description' => $image->description,
                         'width' => $image->width,
                         'height' => $image->height
                     ],

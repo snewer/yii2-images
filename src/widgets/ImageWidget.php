@@ -2,12 +2,12 @@
 
 namespace snewer\images\widgets;
 
-use Yii;
 use yii\widgets\InputWidget;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\helpers\Json;
 use snewer\images\Asset;
+use snewer\images\models\ImageUpload;
 
 class ImageWidget extends InputWidget
 {
@@ -15,12 +15,26 @@ class ImageWidget extends InputWidget
     public $urls = [];
 
     public $trim = false;
+
     public $aspectRatio = 0;
-    public $minWidth = 0;
-    public $minHeight = 0;
-    public $maxWidth = 0;
-    public $maxHeight = 0;
+
+    public $minWidth = ImageUpload::MIN_SIZE;
+
+    public $minHeight = ImageUpload::MIN_SIZE;
+
+    public $maxWidth = ImageUpload::MAX_SIZE;
+
+    public $maxHeight = ImageUpload::MAX_SIZE;
+
+    public $bgColor = '#FFFFFF';
+
     public $supportAC = false;
+
+    public $previewWidth = 300;
+
+    public $previewHeight = 300;
+
+    public $previews = [];
 
     public $cropperAsset = 'snewer\images\CropperAsset';
 
@@ -33,23 +47,24 @@ class ImageWidget extends InputWidget
         return Html::hiddenInput($name, $value, $this->options);
     }
 
+    public function init()
+    {
+        parent::init();
+        $this->previews[] = [$this->previewWidth, $this->previewHeight];
+    }
+
     public function run()
     {
-
-        $asset = new Asset();
-        $asset->depends[] = $this->cropperAsset;
-        $asset->registerAssetFiles($this->view);
+        if ($this->cropperAsset) {
+            $this->view->registerAssetBundle($this->cropperAsset);
+        }
+        $this->view->registerAssetBundle(Asset::className());
 
         $options = [
             'urls' => [
-                'addImageToCollection' => Url::to(['images/collection/add-image']),
-                'createImagesCollection' => Url::to(['images/collection/create']),
-                'deleteImageFromCollection' => Url::to(['images/collection/delete']),
                 'getImage' => Url::to(['images/image/get']),
-                'getImagesCollection' => Url::to(['images/collection/get']),
                 'imageProxy' => Url::to(['images/image/proxy']),
-                'imageUpload' => Url::to(['images/image/upload']),
-                'sortImagesCollection' => Url::to(['images/collection/sort']),
+                'imageUpload' => Url::to(['images/image/upload'])
             ],
             'trim' => (bool)$this->trim,
             'aspectRatio' => (float)$this->aspectRatio,
@@ -58,25 +73,8 @@ class ImageWidget extends InputWidget
             'maxWidth' => (int)$this->maxWidth,
             'maxHeight' => (int)$this->maxHeight,
             'supportAC' => (bool)$this->supportAC,
+            'bgColor' => $this->bgColor,
         ];
-
-        /*$hashData = json_encode([
-            'trim' => (string) $options['trim'],
-            'aspectRatio' => (string) $options['aspectRatio'],
-            'minWidth' => (string) $options['minWidth'],
-            'minHeight' => (string) $options['minHeight'],
-            'maxWidth' => (string) $options['maxWidth'],
-            'maxHeight' => (string) $options['maxHeight'],
-            'supportAC' => (string) $options['supportAC']
-        ]);
-        $macHash = Yii::$app->security->macHash;
-        $test = @hash_hmac($macHash, '', '', false);
-        if (!$test) {
-            throw new InvalidConfigException('Failed to generate HMAC with hash algorithm: ' . $macHash);
-        }
-        $hashKey = hash_hmac(Yii::$app->security->macHash, $hashData, Yii::$app->request->cookieValidationKey);
-        $options['hash'] = $hashKey;*/
-
         $js = 'jQuery("#' . $this->options['id'] . '").ImagesWidget(' . Json::encode($options) . ');';
         $this->view->registerJs($js);
         return $this->getInput();

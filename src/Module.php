@@ -9,7 +9,11 @@ class Module extends \yii\base\Module
 
     public $imagesStoreStorageName = 'local_images';
 
+    public $imagesQuality = 100;
+
     public $previewsStoreStorageName = 'local_images';
+
+    public $previewsQuality = 90;
 
     public $previews = [];
 
