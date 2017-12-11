@@ -1,6 +1,6 @@
 <?php
 
-namespace snewer\images;
+namespace snewer\images\assets;
 
 use yii\web\AssetBundle;
 

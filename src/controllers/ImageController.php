@@ -8,6 +8,11 @@ use yii\web\Controller;
 use yii\web\Response;
 use snewer\images\models\Image;
 
+/**
+ * Class ImageController
+ * @package snewer\images\controllers
+ * @property \snewer\images\Module $module
+ */
 class ImageController extends Controller
 {
 
@@ -15,8 +20,6 @@ class ImageController extends Controller
     {
         $source = Yii::$app->request->post('source');
         $options = Yii::$app->request->post('options');
-        /* @var $module \snewer\images\Module */
-        $module = Yii::$app->controller->module;
         /* @var $storage \snewer\storage\StorageManager */
         $imageUpload = ImageUpload::load($source);
 
@@ -44,7 +47,7 @@ class ImageController extends Controller
             $options['aspectRatio'],
             $options['bgColor']
         );
-        $image = $imageUpload->upload($module->imagesStoreStorageName, false, $module->imagesQuality);
+        $image = $imageUpload->upload($this->module->imagesStoreStorageName, false, $this->module->imagesQuality);
         $image->save(false);
         $preview = $image->getOrCreatePreview(300, 300);
         Yii::$app->response->format = Response::FORMAT_JSON;

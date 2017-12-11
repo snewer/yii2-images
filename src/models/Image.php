@@ -5,10 +5,9 @@ namespace snewer\images\models;
 use Yii;
 use yii\db\ActiveRecord;
 use yii\base\InvalidCallException;
-use Intervention\Image\ImageManager;
 use yii\behaviors\TimestampBehavior;
 use yii\behaviors\BlameableBehavior;
-use yii\helpers\ArrayHelper;
+use snewer\images\ModuleTrait;
 
 /**
  * Class Images
@@ -39,7 +38,7 @@ use yii\helpers\ArrayHelper;
 class Image extends ActiveRecord
 {
 
-    public $moduleName = 'images';
+    use ModuleTrait;
 
     private $_source = false;
 
@@ -175,17 +174,7 @@ class Image extends ActiveRecord
     {
         $previewImageUploader = ImageUpload::load($this->source);
         $previewImageUploader->resize($width, $height, $type);
-        if (isset(Yii::$app->modules[$this->moduleName])) {
-            $module = Yii::$app->modules[$this->moduleName];
-            $previewImage = $previewImageUploader->upload(
-            // Подгружаем информацию о месте хранения и качестве превью из модуля изображений.
-                is_object($module) ? $module->previewsStoreStorageName : $module['previewsStoreStorageName'],
-                $this->isSupportsAC(),
-                is_object($module) ? $module->previewsQuality : $module['previewsQuality']
-            );
-        } else {
-            $previewImage = $previewImageUploader->upload($this->storageName, $this->isSupportsAC(), 90);
-        }
+        $previewImage = $previewImageUploader->upload($this->getModule()->previewsStoreStorageName, $this->isSupportsAC(), $this->getModule()->previewsQuality);
         $previewImage->parent_id = $this->id;
         $previewImage->save(false);
         $relatedPreviews = $this->previews ?: [];

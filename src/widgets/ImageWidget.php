@@ -6,7 +6,7 @@ use yii\widgets\InputWidget;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\helpers\Json;
-use snewer\images\Asset;
+use snewer\images\assets\WidgetAsset;
 use snewer\images\models\ImageUpload;
 
 class ImageWidget extends InputWidget
@@ -36,7 +36,7 @@ class ImageWidget extends InputWidget
 
     public $previews = [];
 
-    public $cropperAsset = 'snewer\images\CropperAsset';
+    public $cropperAsset = 'snewer\images\assets\CropperAsset';
 
     protected $multiple = true;
 
@@ -58,7 +58,7 @@ class ImageWidget extends InputWidget
         if ($this->cropperAsset) {
             $this->view->registerAssetBundle($this->cropperAsset);
         }
-        $this->view->registerAssetBundle(Asset::className());
+        $this->view->registerAssetBundle(WidgetAsset::className());
 
         $options = [
             'urls' => [

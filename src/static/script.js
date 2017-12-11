@@ -203,6 +203,7 @@
                     maxWidth: options.maxWidth,
                     maxHeight: options.maxHeight,
                     supportAC: options.supportAC,
+                    bgColor: options.bgColor,
                     crop: image.crop || {}
                 }
             }).done(function (uploadRes) {

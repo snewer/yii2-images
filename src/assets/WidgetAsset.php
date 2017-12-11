@@ -1,10 +1,10 @@
 <?php
 
-namespace snewer\images;
+namespace snewer\images\assets;
 
 use yii\web\AssetBundle;
 
-class Asset extends AssetBundle
+class WidgetAsset extends AssetBundle
 {
 
     public $sourcePath = '@snewer/images/static';
