@@ -33,7 +33,6 @@
                                             '<div class="cropper-wrapper">' +
                                                 '<img src="#" style="display: none">' +
                                             '</div>' +
-
                                         '</td>' +
                                     '</tr>' +
                                 '</tbody>' +
@@ -70,13 +69,6 @@
             cropperImage.cropper('rotate', -45);
         });
 
-        previews.slimScroll({
-            height: '450px',
-            position: 'left',
-            alwaysVisible: true,
-            distance: '3px',
-            size: '5px'
-        });
         uploadBtn.ladda();
         // инициализируем модальное окно
         input.after(modal);

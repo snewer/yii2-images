@@ -38,6 +38,10 @@ class ImageWidget extends InputWidget
 
     public $cropperAsset = 'snewer\images\assets\CropperAsset';
 
+    public $laddaAsset = 'snewer\images\assets\LaddaAsset';
+
+    public $fontAwesomeAsset = 'snewer\images\assets\FontAwesomeAsset';
+
     protected $multiple = true;
 
     private function getInput()
@@ -57,6 +61,12 @@ class ImageWidget extends InputWidget
     {
         if ($this->cropperAsset) {
             $this->view->registerAssetBundle($this->cropperAsset);
+        }
+        if ($this->laddaAsset) {
+            $this->view->registerAssetBundle($this->laddaAsset);
+        }
+        if ($this->fontAwesomeAsset) {
+            $this->view->registerAssetBundle($this->fontAwesomeAsset);
         }
         $this->view->registerAssetBundle(WidgetAsset::className());
 

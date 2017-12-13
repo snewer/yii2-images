@@ -17,10 +17,7 @@ class WidgetAsset extends AssetBundle
     ];
 
     public $depends = [
-        'yii\web\JqueryAsset',
-        //'common\assets\CropperAsset',
-        //'common\assets\LaddaAsset',
-        //'common\assets\ViewerAsset',
+        'yii\web\JqueryAsset'
     ];
 
 }
