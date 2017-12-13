@@ -27,12 +27,17 @@ class Module extends \yii\base\Module
     {
         parent::init();
         if ($this->imagesStoreStorageName === null) {
-            throw new InvalidConfigException('Необходимо установить название хранилища для загрузки изображений \'Module::$imagesStoreStorageName\'');
+            throw new InvalidConfigException('Необходимо установить название хранилища для загрузки изображений \'Module::$imagesStoreStorageName\'.');
         }
         if ($this->previewsStoreStorageName === null) {
             $this->previewsStoreStorageName = $this->imagesStoreStorageName;
         }
-        if (!in_array($this->graphicsLibrary))
+        if ($this->imageModel === null) {
+            throw new InvalidConfigException('Необходимо задать модель изображений.');
+        }
+        if (!in_array($this->graphicsLibrary, ['GD', 'Imagick'])) {
+            throw new InvalidConfigException('Поддерживаются только следующие графические библиотеки: GD, Imagick.');
+        }
     }
 
 }
