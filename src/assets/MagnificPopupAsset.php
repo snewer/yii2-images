@@ -4,16 +4,17 @@ namespace snewer\images\assets;
 
 use yii\web\AssetBundle;
 
-class WidgetAsset extends AssetBundle
+class MagnificPopupAsset extends AssetBundle
 {
 
-    public $sourcePath = '@snewer/images/static/widget';
+    public $sourcePath = '@snewer/images/static/magnific-popup';
 
     public $css = [
-        'style.css',
+        'magnific-popup.css'
     ];
+
     public $js = [
-        'script.js',
+        'jquery.magnific-popup.min.js'
     ];
 
     public $depends = [

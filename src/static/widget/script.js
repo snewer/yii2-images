@@ -19,9 +19,15 @@
         var modalHtml = '<div class="imagesWidget modal inmodal" tabindex="-1" aria-hidden="true">' +
                 '<div class="modal-dialog modal-lg">' +
                     '<div class="modal-content animated bounceInRight">' +
-                           // '<div style="padding: 15px; font-size: 85%; font-weight: bold">' +
-                           //     'Каждое изображение перед загрузкой можно обрезать' +
-                           // '</div>' +
+                            '<div class="modal-footer" style="border-top: none">' +
+                                '<h5 class="pull-left">Загрузка изображения</h5>' +
+                                '<button type="button" class="btn btn-primary">' +
+                                    '<span class="fa fa-rotate-right"></span>' +
+                                '</button>' +
+                                '<button type="button" class="btn btn-primary">' +
+                                    '<span class="fa fa-rotate-left"></span>' +
+                                '</button>' +
+                            '</div>' +
                             '<table style="width: 100%">' +
                                 '<tbody>' +
                                     '<tr style="vertical-align: top">' +
@@ -37,16 +43,12 @@
                                     '</tr>' +
                                 '</tbody>' +
                             '</table>' +
-                        '<div class="modal-footer" style="border-top: none">' +
-                            '<button type="button" class="btn btn-primary"><span class="fa fa-rotate-left"></span></button>' +
-                            '<button type="button" class="btn btn-primary"><span class="fa fa-rotate-right"></span></button>' +
-                        '</div>' +
-                        '<div class="modal-footer" style="border-top: none">' +
-                            '<button type="button" class="btn btn-white cancelUpload" data-dismiss="modal">Отмена</button>' +
-                            '<button type="button" class="btn btn-primary ladda-button upload" data-style="expand-right">' +
-                                'Зарузить выбранное' +
-                            '</button>' +
-                        '</div>' +
+                            '<div class="modal-footer" style="border-top: none">' +
+                                '<button type="button" class="btn btn-white cancelUpload" data-dismiss="modal">Отмена</button>' +
+                                '<button type="button" class="btn btn-primary ladda-button upload" data-style="expand-right">' +
+                                    'Зарузить выбранное' +
+                                '</button>' +
+                            '</div>' +
                     '</div>' +
                 '</div>' +
             '</div>';
@@ -62,7 +64,8 @@
         var rotateRight = modal.find('.fa-rotate-right');
 
         rotateRight.on('click', function () {
-            console.log(cropperImage);
+            //console.log(cropperImage);
+            console.log(123);
             cropperImage.cropper('rotate', 45);
         });
         rotateLeft.on('click', function () {
@@ -110,14 +113,16 @@
                 modalDialog.removeClass('modal-lg');
             }
             $.each(images, function (index, image) {
+                // @formatter:off
                 image.$preview = $(
                     '<div class="preview">' +
-                    '<div class="delete">&times;</div>' +
-                    '<div class="arrow"></div>' +
-                    '<div class="helper"></div>' +
-                    '<img src="' + image.src + '">' +
+                        '<div class="delete">&times;</div>' +
+                        '<div class="arrow"></div>' +
+                        '<div class="helper"></div>' +
+                        '<img src="' + image.src + '">' +
                     '</div>'
                 );
+                // @formatter:on
                 if (index == 0) {
                     image.$preview.addClass('selected');
                     if (cropperIsInit) {
@@ -126,6 +131,7 @@
                         cropperImage.attr('src', image.src);
                         cropperImage.cropper({
                             autoCropArea: 1,
+                            aspectRatio: options.aspectRatio > 0 ? options.aspectRatio : NaN,
                             checkCrossOrigin: false,
                             guides: false,
                             checkOrientation: false,
@@ -242,14 +248,23 @@
             }
         });
 
+        // @formatter:off
         var $collection = $('<div class="imagesCollection">' +
             '<div class="images">' +
+                '<div class="wrapper">' +
+                    '<div class="icontainer">' +
+                        '<div class="image">' +
+                            '<img src="' + options.emptyImage + '">' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
             '</div>' +
             '<div class="upload-tools">' +
             '<span class="clickable select1">Выбрать файл с компьютера</span> ' +
             '<span class="clickable select2">или по URL</span>' +
             '</div>' +
             '</div>');
+        // @formatter:on
 
         var $imagesCollectionContainer = $collection.find('.images');
 
@@ -346,11 +361,13 @@
                 '<div class="wrapper" data-id="' + image.image.id + '">' +
                     '<div class="icontainer">' +
                         '<div class="image">' +
-                            '<img data-src="' + image.image.url + '" src="' + image.preview.url + '" style="cursor: -webkit-zoom-in; cursor: zoom-in">' +
+                            '<a href="' + image.image.url + '" target="_blank" style="display: block">' +
+                                '<img src="' + image.preview.url + '">' +
+                            '</a>' +
                         '</div>' +
                         '<div class="toolbar">' +
-                            '<span title="Обрезать изображение" class="edit glyphicon glyphicon-pencil"></span>' +
-                            '<span title="Удалить изображение" class="remove glyphicon glyphicon-remove"></span>' +
+                            '<span title="Обрезать изображение" class="edit fa fa-crop"></span>' +
+                            '<span title="Удалить изображение" class="remove fa fa-crop"></span>' +
                             '<div class="clearfix"></div>' +
                         '</div>' +
                     '</div>' +
@@ -361,19 +378,27 @@
 
             $imagesCollectionContainer.html($elem);
 
+            $elem.find('a').magnificPopup({
+                type: 'image',
+                closeOnContentClick: true,
+                mainClass: 'mfp-img-mobile',
+                image: {
+                    verticalFit: true
+                },
+                zoom: {
+                    enabled: true,
+                    duration: 300 // don't foget to change the duration also in CSS
+                }
+            });
 
-            var $img = $elem.find('img');
-            var $deleteBtn = $elem.find('.remove');
-            var $cropBtn = $elem.find('.edit');
-
-            $deleteBtn.on('click', function () {
+            $elem.find('.remove').on('click', function () {
                 if (!confirm('Удалить?')) return;
                 input.val('');
                 $elem.remove();
             });
 
 
-            $cropBtn.on('click', function () {
+            $elem.find('.edit').on('click', function () {
                 uploadImageFromURL(image.image.url);
                 //$elem.remove();
             });

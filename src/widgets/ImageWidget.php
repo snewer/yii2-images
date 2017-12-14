@@ -2,6 +2,7 @@
 
 namespace snewer\images\widgets;
 
+use Yii;
 use yii\widgets\InputWidget;
 use yii\helpers\Html;
 use yii\helpers\Url;
@@ -30,17 +31,17 @@ class ImageWidget extends InputWidget
 
     public $supportAC = false;
 
-    public $previewWidth = 300;
-
-    public $previewHeight = 300;
-
     public $previews = [];
+
+    public $emptyImage;
 
     public $cropperAsset = 'snewer\images\assets\CropperAsset';
 
     public $laddaAsset = 'snewer\images\assets\LaddaAsset';
 
     public $fontAwesomeAsset = 'snewer\images\assets\FontAwesomeAsset';
+
+    public $magnificPopupAsset = 'snewer\images\assets\MagnificPopupAsset';
 
     protected $multiple = true;
 
@@ -51,13 +52,7 @@ class ImageWidget extends InputWidget
         return Html::hiddenInput($name, $value, $this->options);
     }
 
-    public function init()
-    {
-        parent::init();
-        $this->previews[] = [$this->previewWidth, $this->previewHeight];
-    }
-
-    public function run()
+    protected function registerAdditionalAssets()
     {
         if ($this->cropperAsset) {
             $this->view->registerAssetBundle($this->cropperAsset);
@@ -68,8 +63,28 @@ class ImageWidget extends InputWidget
         if ($this->fontAwesomeAsset) {
             $this->view->registerAssetBundle($this->fontAwesomeAsset);
         }
-        $this->view->registerAssetBundle(WidgetAsset::className());
+        if ($this->magnificPopupAsset) {
+            $this->view->registerAssetBundle($this->magnificPopupAsset);
+        }
+    }
 
+
+    public function init()
+    {
+        parent::init();
+        $this->previews[] = [400, 0];
+
+        $this->registerAdditionalAssets();
+        $widgetAsset = $this->view->registerAssetBundle(WidgetAsset::className());
+        if ($this->emptyImage === null) {
+            $this->emptyImage = Yii::$app->assetManager->getAssetUrl($widgetAsset, 'no-image.png');
+        }
+
+
+    }
+
+    public function run()
+    {
         $options = [
             'urls' => [
                 'getImage' => Url::to(['images/image/get']),
@@ -84,6 +99,7 @@ class ImageWidget extends InputWidget
             'maxHeight' => (int)$this->maxHeight,
             'supportAC' => (bool)$this->supportAC,
             'bgColor' => $this->bgColor,
+            'emptyImage' => $this->emptyImage
         ];
         $js = 'jQuery("#' . $this->options['id'] . '").ImagesWidget(' . Json::encode($options) . ');';
         $this->view->registerJs($js);

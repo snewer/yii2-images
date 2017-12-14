@@ -212,7 +212,7 @@ class ImageUpload
         $image->path = $path;
         $image->etag = md5($source);
         $image->parent_id = null;
-        $image->quality = 90;
+        $image->quality = $quality;
         $image->width = $this->_image->width();
         $image->height = $this->_image->height();
         $image->source = $source;

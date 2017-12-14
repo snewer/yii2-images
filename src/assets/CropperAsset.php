@@ -9,10 +9,16 @@ class CropperAsset extends AssetBundle
 
     public $sourcePath = '@snewer/images/static/cropper';
 
-    public $css = ['cropper.min.css'];
+    public $css = [
+        'cropper.min.css'
+    ];
 
-    public $js = ['cropper.min.js'];
+    public $js = [
+        'cropper.min.js'
+    ];
 
-    public $depends = ['yii\web\JqueryAsset'];
+    public $depends = [
+        'yii\web\JqueryAsset'
+    ];
 
 }

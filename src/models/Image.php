@@ -174,7 +174,11 @@ class Image extends ActiveRecord
     {
         $previewImageUploader = ImageUpload::load($this->source);
         $previewImageUploader->resize($width, $height, $type);
-        $previewImage = $previewImageUploader->upload($this->getModule()->previewsStoreStorageName, $this->isSupportsAC(), $this->getModule()->previewsQuality);
+        $previewImage = $previewImageUploader->upload(
+            $this->getModule()->previewsStoreStorageName,
+            $this->isSupportsAC(),
+            $this->getModule()->previewsQuality
+        );
         $previewImage->parent_id = $this->id;
         $previewImage->save(false);
         $relatedPreviews = $this->previews ?: [];
