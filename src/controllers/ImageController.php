@@ -49,7 +49,7 @@ class ImageController extends Controller
         );
         $image = $imageUpload->upload($this->module->imagesStoreStorageName, false, $this->module->imagesQuality);
         $image->save(false);
-        $preview = $image->getOrCreatePreview(400, 0);
+        $preview = $image->getOrCreatePreview(300, 300);
         Yii::$app->response->format = Response::FORMAT_JSON;
         return [
             'success' => true,

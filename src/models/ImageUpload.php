@@ -70,18 +70,24 @@ class ImageUpload
         $width = ceil($width);
         $height = ceil($height);
         if ($x < 0) {
-            $width = max($width + $x, 0);
+            $width = max($width + $x, self::MIN_SIZE);
             $x = 0;
         }
         if ($y < 0) {
-            $height = max($height + $y, 0);
+            $height = max($height + $y, self::MIN_SIZE);
             $y = 0;
         }
-        if ($width > $imageWidth) {
-            $width = $imageWidth;
+        if ($x > $imageWidth - self::MIN_SIZE) {
+            $x = $imageWidth - self::MIN_SIZE;
         }
-        if ($height > $imageHeight) {
-            $height = $imageHeight;
+        if ($y > $imageHeight - self::MIN_SIZE) {
+            $y = $imageHeight - self::MIN_SIZE;
+        }
+        if ($x + $width > $imageWidth) {
+            $width = $imageWidth - $x;
+        }
+        if ($y + $height > $imageHeight) {
+            $height = $imageHeight - $y;
         }
         $this->_image->crop($width, $height, $x, $y);
         return $this;

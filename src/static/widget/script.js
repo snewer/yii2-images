@@ -367,7 +367,7 @@
                         '</div>' +
                         '<div class="toolbar">' +
                             '<span title="Обрезать изображение" class="edit fa fa-crop"></span>' +
-                            '<span title="Удалить изображение" class="remove fa fa-crop"></span>' +
+                            '<span title="Удалить изображение" class="remove fa fa-times"></span>' +
                             '<div class="clearfix"></div>' +
                         '</div>' +
                     '</div>' +
