@@ -50,7 +50,13 @@ class ImageUpload
 
     public function rotate($angle, $bgColor = '#FFFFFF')
     {
-        $this->_image->rotate(-$angle, $bgColor);
+        $angle = floatval($angle);
+        // Была обнаружена проблема при повороте изображения на 0 градусов:
+        // вокруг него добавлялась белая рамка.
+        // Поэтому не вызываем метод rotate когда поворавичвать изображение не нужно.
+        if ($angle % 360 > 0) {
+            $this->_image->rotate(-$angle, $bgColor);
+        }
         // На некоторых изображениях обнаружились проблемы
         // с последовательным вызовом методов rotate и crop для драйвера Imagick.
         // Добавил issue: https://github.com/Intervention/image/issues/723
@@ -216,7 +222,9 @@ class ImageUpload
         $source = trim($this->_image->encode($supportAC ? 'png' : 'jpeg', $quality));
         $path = $image->storage->upload($source, $supportAC ? 'png' : 'jpg');
         $image->path = $path;
-        $image->etag = md5($source);
+        // https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity
+        // todo: переименовать etag в integrity
+        $image->etag = 'sha384-' . base64_encode(hash('sha384', $source, true));
         $image->parent_id = null;
         $image->quality = $quality;
         $image->width = $this->_image->width();
