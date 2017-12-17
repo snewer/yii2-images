@@ -43,6 +43,14 @@ class ImageUpload
         $this->_driver = $driver;
     }
 
+    /**
+     * @return \Intervention\Image\Image
+     */
+    public function getImage()
+    {
+        return $this->_image;
+    }
+
     public static function load($source, $driver = 'GD')
     {
         return new self($source, $driver);

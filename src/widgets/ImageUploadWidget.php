@@ -10,7 +10,7 @@ use yii\helpers\Json;
 use snewer\images\assets\WidgetAsset;
 use snewer\images\models\ImageUpload;
 
-class ImageWidget extends InputWidget
+class ImageUploadWidget extends InputWidget
 {
 
     public $urls = [];
@@ -68,19 +68,15 @@ class ImageWidget extends InputWidget
         }
     }
 
-
     public function init()
     {
         parent::init();
         $this->previews[] = [400, 0];
-
         $this->registerAdditionalAssets();
         $widgetAsset = $this->view->registerAssetBundle(WidgetAsset::className());
         if ($this->emptyImage === null) {
             $this->emptyImage = Yii::$app->assetManager->getAssetUrl($widgetAsset, 'no-image.png');
         }
-
-
     }
 
     public function run()
