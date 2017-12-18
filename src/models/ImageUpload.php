@@ -12,16 +12,6 @@ class ImageUpload
     use ModuleTrait;
 
     /**
-     * Минимальный размер стороны изображения.
-     */
-    const MIN_SIZE = 1;
-
-    /**
-     * Максимальный размер стороны изображения.
-     */
-    const MAX_SIZE = 10000;
-
-    /**
      * @var \Intervention\Image\Image
      */
     public $image;

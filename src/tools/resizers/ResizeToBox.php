@@ -2,28 +2,40 @@
 
 namespace snewer\images\tools\resizers;
 
-use snewer\images\models\ImageUpload;
 use snewer\images\models\ImageTypes;
 
 class ResizeToBox extends Resizer
 {
 
+    /**
+     * Минимальный размер стороны изображения.
+     */
+    const MIN_SIZE = 1;
+
+    /**
+     * Максимальный размер стороны изображения.
+     */
+    const MAX_SIZE = 10000;
+
     public $width = 0;
 
     public $height = 0;
 
-    public $minWidth = ImageUpload::MIN_SIZE;
+    public $minWidth = self::MIN_SIZE;
 
-    public $minHeight = ImageUpload::MIN_SIZE;
+    public $minHeight = self::MIN_SIZE;
 
-    public $maxWidth = ImageUpload::MAX_SIZE;
+    public $maxWidth = self::MAX_SIZE;
 
-    public $maxHeight = ImageUpload::MAX_SIZE;
+    public $maxHeight = self::MAX_SIZE;
 
     public $aspectRatio = 0;
 
     public $bgColor = '#FFFFFF';
 
+    /**
+     * @inheritdoc
+     */
     public static function getType()
     {
         return ImageTypes::RESIZED_TO_BOX;
