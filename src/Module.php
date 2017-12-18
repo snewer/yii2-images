@@ -19,9 +19,7 @@ class Module extends \yii\base\Module
 
     public $previews = [];
 
-    public $graphicsLibrary = 'GD';
-
-    public $imageModel = 'snewer\images\models\Image';
+    public $driver = 'GD';
 
     public function init()
     {
@@ -32,10 +30,7 @@ class Module extends \yii\base\Module
         if ($this->previewsStoreStorageName === null) {
             $this->previewsStoreStorageName = $this->imagesStoreStorageName;
         }
-        if ($this->imageModel === null) {
-            throw new InvalidConfigException('Необходимо задать модель изображений.');
-        }
-        if (!in_array($this->graphicsLibrary, ['GD', 'Imagick'])) {
+        if (!in_array($this->driver, ['GD', 'Imagick'])) {
             throw new InvalidConfigException('Поддерживаются только следующие графические библиотеки: GD, Imagick.');
         }
     }

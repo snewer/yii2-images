@@ -40,8 +40,6 @@ class Image extends ActiveRecord
 
     use ModuleTrait;
 
-    private $_source = false;
-
     public function behaviors()
     {
         return [
@@ -85,13 +83,15 @@ class Image extends ActiveRecord
 
     public function getUrl()
     {
-        return $this->storage->getUrl($this->path);
+        return $this->getStorage()->getUrl($this->path);
     }
+
+    private $_source = false;
 
     public function getSource()
     {
         if ($this->_source === false) {
-            $this->_source = $this->storage->getSource($this->path);
+            $this->_source = $this->getStorage()->getSource($this->path);
         }
         return $this->_source;
     }
@@ -104,6 +104,7 @@ class Image extends ActiveRecord
     /**
      * Поддерживает ли данное изображение альфа-канал.
      * То есть имеет ли изображение формат PNG.
+     * @return boolean
      */
     public function isSupportsAC()
     {
@@ -123,18 +124,18 @@ class Image extends ActiveRecord
     }
 
     /**
-     * Метод для получения существующего превью изображения
-     * заданного размера и типа.
+     * Метод для получения существующего превью изображения заданного размера и типа.
      * Вернется false, если првеью не существует.
      * @param $width
      * @param $height
+     * @param $type
      * @return false|Image
      */
-    private function getPreview($width, $height)
+    private function findPreview($width, $height, $type)
     {
         foreach ($this->previews as $preview) {
             /* @var $preview self */
-            if ($preview->width == $width && $preview->height == $height && $preview->type == ImageTypes::RESIZED_TO_BOX) {
+            if ($preview->width == $width && $preview->height == $height && $preview->type == $type) {
                 return $preview;
             }
         }
@@ -146,21 +147,35 @@ class Image extends ActiveRecord
      * Если превью не будет найдено, то оно будет создано.
      * @param $width
      * @param $height
+     * @param $configuration
      * @return Image
      */
-    public function getOrCreatePreview($width = 0, $height = 0)
+    public function getOrCreatePreview($width = 0, $height = 0, $configuration = null)
     {
         if ($width <= 0 && $height <= 0) {
             throw new InvalidCallException('Для превью необходимо указать ширину и/или высоту.');
         } elseif ($width <= 0) {
-            $width = ceil($height * $this->width / $this->height);
+            $width = $height * $this->width / $this->height;
         } elseif ($height <= 0) {
-            $height = ceil($width * $this->height / $this->width);
+            $height = $width * $this->height / $this->width;
         }
-        $preview = $this->getPreview($width, $height);
+        if ($configuration === null) {
+            $configuration = [
+                'class' => 'snewer\images\tools\resizers\ResizeToBox',
+                'width' => $width,
+                'height' => $height
+            ];
+        } elseif (is_array($configuration)) {
+            $configuration['width'] = $width;
+            $configuration['height'] = $height;
+        } elseif (is_object($configuration)) {
+            $configuration->width = $width;
+            $configuration->height = $height;
+        }
+        $resizer = is_object($configuration) ? $configuration : Yii::createObject($configuration);
+        $preview = $this->findPreview($width, $height, $resizer->getType());
         if (!$preview) {
-            // Создаем новую preview и добавляем ее в _related свойство ActiveRecord
-            $preview = $this->createPreview($width, $height);
+            $preview = $this->createPreview($resizer);
             $relatedPreviews = $this->previews ?: [];
             $relatedPreviews[] = $preview;
             $this->populateRelation('previews', $relatedPreviews);
@@ -168,22 +183,23 @@ class Image extends ActiveRecord
         return $preview;
     }
 
-    public function createPreview($width, $height)
+    /**
+     * @param object|array $configuration - конфигурация или экземпляр наследника \snewer\images\tools\resizer\Resizer.
+     * @return Image
+     */
+    public function createPreview($configuration)
     {
-        $previewUploader = ImageUpload::extend($this);
-        $previewUploader->applyTool([
-            'class' => 'snewer\images\tools\ResizeToBox',
-            'width' => $width,
-            'height' => $height
-        ]);
-        $preview = $previewUploader->upload(
+        $resizer = is_object($configuration) ? $configuration : Yii::createObject($configuration);
+        $uploader = ImageUpload::extend($this);
+        $uploader->applyTool($resizer);
+        $preview = $uploader->upload(
             $this->getModule()->previewsStoreStorageName,
             $this->isSupportsAC(),
             $this->getModule()->previewsQuality
         );
         $preview->parent_id = $this->id;
-        $preview->type = ImageTypes::RESIZED_TO_BOX;
-        $preview->save();
+        $preview->type = $resizer->getType();
+        $preview->save(false);
         $relatedPreviews = $this->previews ?: [];
         $relatedPreviews[] = $preview;
         $this->populateRelation('previews', $relatedPreviews);

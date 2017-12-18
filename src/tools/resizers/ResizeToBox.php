@@ -1,10 +1,11 @@
 <?php
 
-namespace snewer\images\tools;
+namespace snewer\images\tools\resizers;
 
 use snewer\images\models\ImageUpload;
+use snewer\images\models\ImageTypes;
 
-class ResizeToBox extends Tool
+class ResizeToBox extends Resizer
 {
 
     public $width = 0;
@@ -22,6 +23,11 @@ class ResizeToBox extends Tool
     public $aspectRatio = 0;
 
     public $bgColor = '#FFFFFF';
+
+    public static function getType()
+    {
+        return ImageTypes::RESIZED_TO_BOX;
+    }
 
     /**
      * @inheritdoc

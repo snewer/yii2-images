@@ -3,10 +3,13 @@
 namespace snewer\images\models;
 
 use Yii;
+use snewer\images\ModuleTrait;
 use Intervention\Image\ImageManager;
 
 class ImageUpload
 {
+
+    use ModuleTrait;
 
     /**
      * Минимальный размер стороны изображения.
@@ -23,67 +26,71 @@ class ImageUpload
      */
     public $image;
 
+    /**
+     * @var Image
+     */
     public $model;
 
     /**
      * ImageUpload constructor.
      * @param $source
-     * @param $driver
      */
-    private function __construct($source, $driver)
+    private function __construct($source)
     {
-        $imageManager = new ImageManager(['driver' => $driver]);
+        $imageManager = new ImageManager(['driver' => $this->getModule()->driver]);
         $this->image = $imageManager->make($source);
     }
 
     /**
+     * Инициализирует загрузчик из
      * @param $source
-     * @param string $driver
      * @return self
      */
-    public static function load($source, $driver = 'GD')
+    public static function load($source)
     {
-        return new self($source, $driver);
+        return new self($source);
     }
 
     /**
+     * Инициализирует загрузчик изображения из существующей модели.
      * @param Image $image
-     * @param string $driver
      * @return self
      */
-    public static function extend(Image $image, $driver = 'GD')
+    public static function extend(Image $image)
     {
-        return new self($image->source, $driver);
+        $obj = new self($image->source);
+        $obj->model = $image;
+        return $obj;
     }
 
+    /**
+     * Применяет к изображению объекты типа \snewer\images\tools\Tool.
+     * @param $configuration
+     */
     public function applyTool($configuration)
     {
-        /* @var \snewer\images\tools\Tool $toolObject */
-        $toolObject = Yii::createObject($configuration);
+        $toolObject = is_object($configuration) ? $configuration : Yii::createObject($configuration);
         $toolObject->init();
         $toolObject->process($this->image);
     }
 
     /**
-     * Внимание! Возвращаемая модель не сохранена в базу данных.
+     * Внимание! Метод не сохраняет возвращаемую модель в базу данных.
      * @param string $storageName - Название хранилища, в которое необходимо загрузить изображение
      * @param bool $supportAC - Нужна ли поддержка альфа канала
      * @param integer $quality - Качество изображения
      * @return Image
      */
-    public function upload($storageName, $supportAC = false, $quality = 90)
+    public function upload($storageName, $supportAC, $quality)
     {
+        $quality = min(max($quality, 30), 100);
         $image = new Image();
         $storageModel = ImageStorage::findOrCreateByName($storageName);
         $image->storage_id = $storageModel->id;
-        // Была обнаружена проблема, когда md5 хэш файла не совпадал с хэшем файла,
-        // который загружается в облачное хранилище по http. Trim решает проблему.
         $source = trim($this->image->encode($supportAC ? 'png' : 'jpeg', $quality));
         $path = $image->storage->upload($source, $supportAC ? 'png' : 'jpg');
         $image->path = $path;
-        // https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity
         $image->integrity = 'sha384-' . base64_encode(hash('sha384', $source, true));
-        $image->parent_id = null;
         $image->quality = $quality;
         $image->width = $this->image->width();
         $image->height = $this->image->height();

@@ -41,17 +41,18 @@ class ImageController extends Controller
                 'height' => $options['crop']['height']
             ]);
         }
-        if ($options['trim'] === true || $options['trim'] == 'true') {
+        if ($options['trim'] === true || $options['trim'] === 'true') {
             $imageUpload->applyTool('snewer\images\tools\Trim');
         }
-        $imageUpload->applyTool('snewer\images\tools\ResizeToBox');
+        $imageUpload->applyTool('snewer\images\tools\resizers\ResizeToBox');
+        // Загрузка оригинала изображения
         $image = $imageUpload->upload(
             $this->getModule()->imagesStoreStorageName,
-            false,
+            isset($options['supportAC']) ? ($options['supportAC'] === true || $options['supportAC'] === 'true') : false,
             $this->getModule()->imagesQuality
         );
         $image->type = ImageTypes::ORIGINAL;
-        $image->save();
+        $image->save(false);
         $preview = $image->getOrCreatePreview(300, 300);
         Yii::$app->response->format = Response::FORMAT_JSON;
         return [
