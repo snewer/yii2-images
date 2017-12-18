@@ -3,10 +3,12 @@
 namespace snewer\images\controllers;
 
 use snewer\images\models\ImageUpload;
+use snewer\images\ModuleTrait;
 use Yii;
 use yii\web\Controller;
 use yii\web\Response;
 use snewer\images\models\Image;
+use snewer\images\models\ImageTypes;
 
 /**
  * Class ImageController
@@ -16,39 +18,40 @@ use snewer\images\models\Image;
 class ImageController extends Controller
 {
 
+    use ModuleTrait;
+
     public function actionUpload()
     {
         $source = Yii::$app->request->post('source');
         $options = Yii::$app->request->post('options');
-        /* @var $storage \snewer\storage\StorageManager */
         $imageUpload = ImageUpload::load($source);
-
         if (isset($options['crop']['rotate'])) {
-            $imageUpload->rotate($options['crop']['rotate'], $options['bgColor']);
+            $imageUpload->applyTool([
+                'class' => 'snewer\images\tools\Rotate',
+                'angle' => $options['crop']['rotate'],
+                'bgColor' => $options['bgColor']
+            ]);
         }
         if (isset($options['crop']['width'], $options['crop']['height'], $options['crop']['x'], $options['crop']['y'])) {
-            $imageUpload->crop(
-                $options['crop']['x'],
-                $options['crop']['y'],
-                $options['crop']['width'],
-                $options['crop']['height']
-            );
+            $imageUpload->applyTool([
+                'class' => 'snewer\images\tools\Crop',
+                'x' => $options['crop']['x'],
+                'y' => $options['crop']['y'],
+                'width' => $options['crop']['width'],
+                'height' => $options['crop']['height']
+            ]);
         }
         if ($options['trim'] === true || $options['trim'] == 'true') {
-            $imageUpload->trim();
+            $imageUpload->applyTool('snewer\images\tools\Trim');
         }
-        $imageUpload->resizeToBox(
-            0,
-            0,
-            $options['minWidth'],
-            $options['minHeight'],
-            $options['maxWidth'],
-            $options['maxHeight'],
-            $options['aspectRatio'],
-            $options['bgColor']
+        $imageUpload->applyTool('snewer\images\tools\ResizeToBox');
+        $image = $imageUpload->upload(
+            $this->getModule()->imagesStoreStorageName,
+            false,
+            $this->getModule()->imagesQuality
         );
-        $image = $imageUpload->upload($this->module->imagesStoreStorageName, false, $this->module->imagesQuality);
-        $image->save(false);
+        $image->type = ImageTypes::ORIGINAL;
+        $image->save();
         $preview = $image->getOrCreatePreview(300, 300);
         Yii::$app->response->format = Response::FORMAT_JSON;
         return [
@@ -56,12 +59,13 @@ class ImageController extends Controller
             'image' => [
                 'id' => $image->id,
                 'url' => $image->url,
-                'etag' => $image->etag,
+                'integrity' => $image->integrity,
                 'width' => $image->width,
                 'height' => $image->height
             ],
             'preview' => [
                 'url' => $preview->url,
+                'integrity' => $image->integrity,
                 'width' => $preview->width,
                 'height' => $preview->height
             ]
@@ -81,11 +85,13 @@ class ImageController extends Controller
                     'image' => [
                         'id' => $image->id,
                         'url' => $image->url,
+                        'integrity' => $image->integrity,
                         'width' => $image->width,
                         'height' => $image->height
                     ],
                     'preview' => [
                         'url' => $preview->url,
+                        'integrity' => $image->integrity,
                         'width' => $preview->width,
                         'height' => $preview->height
                     ]

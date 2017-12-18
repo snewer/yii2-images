@@ -14,11 +14,11 @@ use snewer\images\ModuleTrait;
  *
  * From database:
  * @property $id
- * @property $preview_type
+ * @property $type
  * @property $parent_id
  * @property $storage_id
  * @property $path
- * @property $etag
+ * @property $integrity
  * @property $width
  * @property $height
  * @property $quality
@@ -128,14 +128,13 @@ class Image extends ActiveRecord
      * Вернется false, если првеью не существует.
      * @param $width
      * @param $height
-     * @param $type
-     * @return bool|Image
+     * @return false|Image
      */
-    private function getPreview($width, $height, $type = ImageUpload::RESIZE_BOX)
+    private function getPreview($width, $height)
     {
         foreach ($this->previews as $preview) {
             /* @var $preview self */
-            if ($preview->width == $width && $preview->height == $height /*&& $preview->preview_type == $type*/) {
+            if ($preview->width == $width && $preview->height == $height && $preview->type == ImageTypes::RESIZED_TO_BOX) {
                 return $preview;
             }
         }
@@ -147,10 +146,9 @@ class Image extends ActiveRecord
      * Если превью не будет найдено, то оно будет создано.
      * @param $width
      * @param $height
-     * @param $type
      * @return Image
      */
-    public function getOrCreatePreview($width = 0, $height = 0, $type = ImageUpload::RESIZE_BOX)
+    public function getOrCreatePreview($width = 0, $height = 0)
     {
         if ($width <= 0 && $height <= 0) {
             throw new InvalidCallException('Для превью необходимо указать ширину и/или высоту.');
@@ -159,10 +157,10 @@ class Image extends ActiveRecord
         } elseif ($height <= 0) {
             $height = ceil($width * $this->height / $this->width);
         }
-        $preview = $this->getPreview($width, $height, $type);
+        $preview = $this->getPreview($width, $height);
         if (!$preview) {
             // Создаем новую preview и добавляем ее в _related свойство ActiveRecord
-            $preview = $this->createPreview($width, $height, $type);
+            $preview = $this->createPreview($width, $height);
             $relatedPreviews = $this->previews ?: [];
             $relatedPreviews[] = $preview;
             $this->populateRelation('previews', $relatedPreviews);
@@ -170,21 +168,26 @@ class Image extends ActiveRecord
         return $preview;
     }
 
-    public function createPreview($width, $height, $type = ImageUpload::RESIZE_BOX)
+    public function createPreview($width, $height)
     {
-        $previewImageUploader = ImageUpload::load($this->source);
-        $previewImageUploader->resize($width, $height, $type);
-        $previewImage = $previewImageUploader->upload(
+        $previewUploader = ImageUpload::extend($this);
+        $previewUploader->applyTool([
+            'class' => 'snewer\images\tools\ResizeToBox',
+            'width' => $width,
+            'height' => $height
+        ]);
+        $preview = $previewUploader->upload(
             $this->getModule()->previewsStoreStorageName,
             $this->isSupportsAC(),
             $this->getModule()->previewsQuality
         );
-        $previewImage->parent_id = $this->id;
-        $previewImage->save(false);
+        $preview->parent_id = $this->id;
+        $preview->type = ImageTypes::RESIZED_TO_BOX;
+        $preview->save();
         $relatedPreviews = $this->previews ?: [];
-        $relatedPreviews[] = $previewImage;
+        $relatedPreviews[] = $preview;
         $this->populateRelation('previews', $relatedPreviews);
-        return $previewImage;
+        return $preview;
     }
 
 }

@@ -2,17 +2,14 @@
 
 namespace snewer\images\tools;
 
-use snewer\images\models\Image;
-use snewer\images\models\ImageStorage;
 use snewer\images\models\ImageUpload;
-use snewer\images\models\ImageTypes;
 
-class ResizeToBox extends Resizer
+class ResizeToBox extends Tool
 {
 
-    public $width;
+    public $width = 0;
 
-    public $height;
+    public $height = 0;
 
     public $minWidth = ImageUpload::MIN_SIZE;
 
@@ -27,9 +24,9 @@ class ResizeToBox extends Resizer
     public $bgColor = '#FFFFFF';
 
     /**
-     * @param \Intervention\Image\Image $image
+     * @inheritdoc
      */
-    protected function resize($image)
+    public function process($image)
     {
         $width = $image->width();
         $height = $image->height();
@@ -87,19 +84,6 @@ class ResizeToBox extends Resizer
             $image->resize($width, $height);
         }
         $image->resizeCanvas($canvasWidth, $canvasHeight, 'center', false, $this->bgColor);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function process(Image $image)
-    {
-        $imageUpload = ImageUpload::load($image->source);
-        $this->resize($imageUpload->getImage());
-        $image = $imageUpload->upload($this->getModule()->previewsStoreStorageName);
-        $image->type = ImageTypes::RESIZED_TO_BOX;
-        $image->save();
-        return $image;
     }
 
 }
