@@ -60,8 +60,9 @@ class ImageUpload
     public function applyTool($configuration)
     {
         $toolObject = is_object($configuration) ? $configuration : Yii::createObject($configuration);
+        $toolObject->image = $this->image;
         $toolObject->init();
-        $toolObject->process($this->image);
+        $toolObject->process();
     }
 
     /**

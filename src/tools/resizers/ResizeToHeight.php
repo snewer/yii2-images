@@ -15,7 +15,7 @@ class ResizeToHeight extends Resizer
 
     public function getHash()
     {
-        return 'resize_to_height:' . $this->height;
+        return 'rth:' . $this->height;
     }
 
     public function process()

@@ -24,7 +24,7 @@ class ResizeBestFit extends Resizer
             $this->width,
             $this->height
         ];
-        return 'resize_best_fit:' . implode(':', $params);
+        return 'rbf:' . implode(':', $params);
     }
 
     public function init()

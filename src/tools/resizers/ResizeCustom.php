@@ -7,10 +7,10 @@ use yii\base\InvalidConfigException;
 /**
  * Изменяет размер изображения без сохранения пропорций.
  *
- * Class Resize
+ * Class ResizeCustom
  * @package snewer\images\tools\resizers
  */
-class Resize extends Resizer
+class ResizeCustom extends Resizer
 {
 
     public $width;
@@ -19,7 +19,7 @@ class Resize extends Resizer
 
     public function getHash()
     {
-        return 'resize:' . $this->width . ':' . $this->height;
+        return 'rc:' . $this->width . ':' . $this->height;
     }
 
     public function init()

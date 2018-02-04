@@ -7,6 +7,7 @@ use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 use yii\behaviors\BlameableBehavior;
 use snewer\images\ModuleTrait;
+use snewer\images\tools\Tool;
 
 /**
  * Class Images
@@ -138,53 +139,10 @@ class Image extends ActiveRecord
     }
 
     /**
-     * Метод для получения превью изображение заданного размера
-     * Если превью не будет найдено, то оно будет создано.
-     * @param $width
-     * @param $height
-     * @param $configuration
-     * @return Image
-     */
-    public function getOrCreatePreview($width = 0, $height = 0, $configuration = null)
-    {
-
-        /* if ($width <= 0 && $height <= 0) {
-             throw new InvalidCallException('Для превью необходимо указать ширину и/или высоту.');
-         } elseif ($width <= 0) {
-             $width = $height * $this->width / $this->height;
-         } elseif ($height <= 0) {
-             $height = $width * $this->height / $this->width;
-         }*/
-        if ($configuration === null) {
-            $configuration = [
-                'class' => 'snewer\images\tools\resizers\ResizeAndCrop',
-            ];
-        }
-
-        if ($width > 0) {
-            $configuration['width'] = $width;
-        }
-
-        if ($height > 0) {
-            $configuration['height'] = $height;
-        }
-
-        $resizer = is_object($configuration) ? $configuration : Yii::createObject($configuration);
-        $preview = $this->findPreview($resizer->getHash());
-        if (!$preview) {
-            $preview = $this->createPreview($resizer);
-            $relatedPreviews = $this->previews ?: [];
-            $relatedPreviews[] = $preview;
-            $this->populateRelation('previews', $relatedPreviews);
-        }
-        return $preview;
-    }
-
-    /**
      * @param object|array $configuration - конфигурация или экземпляр наследника \snewer\images\tools\resizer\Resizer.
      * @return Image
      */
-    public function createPreview($configuration)
+    private function createPreview($configuration)
     {
         $resizer = is_object($configuration) ? $configuration : Yii::createObject($configuration);
         $uploader = ImageUpload::extend($this);
@@ -201,6 +159,87 @@ class Image extends ActiveRecord
         $relatedPreviews[] = $preview;
         $this->populateRelation('previews', $relatedPreviews);
         return $preview;
+    }
+
+    /**
+     * Метод для получения превью изображения под заданной конфигурации.
+     * Если превью не будет найдено, то оно будет создано.
+     * @param $configuration
+     * @return Image
+     */
+    public function getPreviewByConfiguration($configuration)
+    {
+        $resizer = is_object($configuration) ? $configuration : Yii::createObject($configuration);
+        $preview = $this->findPreview($resizer->getHash());
+        if (!$preview) {
+            $preview = $this->createPreview($resizer);
+            $relatedPreviews = $this->previews ?: [];
+            $relatedPreviews[] = $preview;
+            $this->populateRelation('previews', $relatedPreviews);
+        }
+        return $preview;
+    }
+
+    public function getPreviewCustom($width, $height)
+    {
+        return $this->getPreviewByConfiguration([
+            'class' => 'snewer\images\tools\resizers\ResizeCustom',
+            'width' => $width,
+            'height' => $height
+        ]);
+    }
+
+    public function getPreviewToWith($width)
+    {
+        return $this->getPreviewByConfiguration([
+            'class' => 'snewer\images\tools\resizers\ResizeToWidth',
+            'width' => $width
+        ]);
+    }
+
+    public function getPreviewToHeight($height)
+    {
+        return $this->getPreviewByConfiguration([
+            'class' => 'snewer\images\tools\resizers\ResizeToHeight',
+            'height' => $height
+        ]);
+    }
+
+    public function getPreviewBackgroundColor($width = null, $height = null, $minWidth = null, $minHeight = null, $maxWidth = null, $maxHeight = null, $aspectRatio = null, $bgColor = null)
+    {
+        return $this->getPreviewByConfiguration([
+            'class' => 'snewer\images\tools\resizers\ResizeBackgroundColor',
+            'width' => $width ?: 0,
+            'height' => $height ?: 0,
+            'minWidth' => $minWidth ?: Tool::MIN_SIZE,
+            'maxWidth' => $maxWidth ?: Tool::MIN_SIZE,
+            'minHeight' => $minHeight ?: Tool::MAX_SIZE,
+            'maxHeight' => $maxHeight ?: Tool::MAX_SIZE,
+            'aspectRatio' => $aspectRatio ?: 0,
+            'bgColor' => $bgColor ?: '#FFFFFF'
+        ]);
+    }
+
+    public function getPreviewBestFit($width, $height)
+    {
+        return $this->getPreviewByConfiguration([
+            'class' => 'snewer\images\tools\resizers\ResizeBestFit',
+            'width' => $width,
+            'height' => $height
+        ]);
+    }
+
+    public function getPreviewBackgroundImage($width, $height, $background, $greyscale, $blur, $pixelate)
+    {
+        return $this->getPreviewByConfiguration([
+            'class' => 'snewer\images\tools\resizers\ResizeBestFit',
+            'width' => $width,
+            'height' => $height,
+            'background' => $background ?: null,
+            'greyscale' => $greyscale ?: true,
+            'blur' => $blur ?: 30,
+            'pixelate' => $pixelate ?: 5
+        ]);
     }
 
 }

@@ -15,7 +15,7 @@ class ResizeToWidth extends Resizer
 
     public function getHash()
     {
-        return 'resize_to_width:' . $this->width;
+        return 'rtw:' . $this->width;
     }
 
     public function process()

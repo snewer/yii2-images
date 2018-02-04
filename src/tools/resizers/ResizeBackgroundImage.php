@@ -14,7 +14,7 @@ use snewer\images\ModuleTrait;
  * Class ResizeBackground
  * @package snewer\images\tools\resizers
  */
-class ResizeBackground extends Resizer
+class ResizeBackgroundImage extends Resizer
 {
 
     use ModuleTrait;
@@ -41,7 +41,7 @@ class ResizeBackground extends Resizer
             $this->blur,
             $this->pixelate
         ];
-        return 'resize_self_background:' . implode(':', $params);
+        return 'rbi:' . implode(':', $params);
     }
 
     public function init()

@@ -9,7 +9,7 @@ class DefaultController extends Controller
 
     public function actionIndex()
     {
-        echo 'Все хорошо.';
+        echo '200';
     }
 
 }

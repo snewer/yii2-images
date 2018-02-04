@@ -12,7 +12,7 @@ use yii\base\InvalidConfigException;
  * Class ResizeToBox
  * @package snewer\images\tools\resizers
  */
-class ResizeToBox extends Resizer
+class ResizeBackgroundColor extends Resizer
 {
 
     const MAX_SIZE = 10000;
@@ -48,19 +48,11 @@ class ResizeToBox extends Resizer
             $this->aspectRatio,
             $this->bgColor
         ];
-        return 'resize_self_background:' . implode(':', $params);
+        return 'rbc:' . implode(':', $params);
     }
 
     public function init()
     {
-        if ($this->width <= 0) {
-            throw new InvalidConfigException('Необходимо указать ширину.');
-        }
-        if ($this->height <= 0) {
-            throw new InvalidConfigException('Необходимо указать высоту.');
-        }
-        $this->width = ceil($this->width);
-        $this->height = ceil($this->height);
     }
 
     /**

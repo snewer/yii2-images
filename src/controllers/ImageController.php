@@ -19,6 +19,11 @@ class ImageController extends Controller
 
     use ModuleTrait;
 
+    private function isTrue($value)
+    {
+        return $value === true || $value === 'true';
+    }
+
     public function actionUpload()
     {
         $source = Yii::$app->request->post('source');
@@ -40,18 +45,17 @@ class ImageController extends Controller
                 'height' => $options['crop']['height']
             ]);
         }
-        if ($options['trim'] === true || $options['trim'] === 'true') {
+        if (isset($options['trim']) && $this->isTrue($options['trim'])) {
             $imageUpload->applyTool('snewer\images\tools\Trim');
         }
-        $imageUpload->applyTool('snewer\images\tools\resizers\ResizeToBox');
         // Загрузка оригинала изображения
         $image = $imageUpload->upload(
             $this->getModule()->imagesStoreBucketName,
-            isset($options['supportAC']) ? ($options['supportAC'] === true || $options['supportAC'] === 'true') : false,
+            isset($options['supportAC']) ? $this->isTrue($options['supportAC']) : false,
             $this->getModule()->imagesQuality
         );
         $image->save(false);
-        $preview = $image->getOrCreatePreview(300, 300);
+        $preview = $image->getPreviewBestFit(300, 300);
         Yii::$app->response->format = Response::FORMAT_JSON;
         return [
             'success' => true,
@@ -77,7 +81,7 @@ class ImageController extends Controller
         $id = Yii::$app->request->post('id');
         if ($id) {
             $image = Image::findOne($id);
-            $preview = $image->getOrCreatePreview(300, 300);
+            $preview = $image->getPreviewBestFit(300, 300);
             if ($image) {
                 return [
                     'success' => true,
