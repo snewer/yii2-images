@@ -6,12 +6,12 @@ use yii\base\ErrorException;
 use yii\db\ActiveRecord;
 
 /**
- * Class ImageStorage
+ * Class ImageBucket
  * @package snewer\images\models
  * @property $id
  * @property $name
  */
-class ImageStorage extends ActiveRecord
+class ImageBucket extends ActiveRecord
 {
 
     /**
@@ -20,7 +20,7 @@ class ImageStorage extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%images_storage}}';
+        return '{{%images_buckets}}';
     }
 
     /**

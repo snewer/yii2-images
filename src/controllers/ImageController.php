@@ -8,7 +8,6 @@ use Yii;
 use yii\web\Controller;
 use yii\web\Response;
 use snewer\images\models\Image;
-use snewer\images\models\ImageTypes;
 
 /**
  * Class ImageController
@@ -47,11 +46,10 @@ class ImageController extends Controller
         $imageUpload->applyTool('snewer\images\tools\resizers\ResizeToBox');
         // Загрузка оригинала изображения
         $image = $imageUpload->upload(
-            $this->getModule()->imagesStoreStorageName,
+            $this->getModule()->imagesStoreBucketName,
             isset($options['supportAC']) ? ($options['supportAC'] === true || $options['supportAC'] === 'true') : false,
             $this->getModule()->imagesQuality
         );
-        $image->type = ImageTypes::ORIGINAL;
         $image->save(false);
         $preview = $image->getOrCreatePreview(300, 300);
         Yii::$app->response->format = Response::FORMAT_JSON;

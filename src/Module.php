@@ -2,18 +2,27 @@
 
 namespace snewer\images;
 
+use Yii;
 use yii\base\InvalidConfigException;
 
+/**
+ * Class Module
+ * @package snewer\images
+ * @property \snewer\storage\StorageManager $storage
+ */
 class Module extends \yii\base\Module
 {
 
-    public $storageComponentName = 'storage';
+    /**
+     * @var string|\snewer\storage\StorageManager
+     */
+    private $_storage = 'storage';
 
-    public $imagesStoreStorageName;
+    public $imagesStoreBucketName;
 
     public $imagesQuality = 100;
 
-    public $previewsStoreStorageName;
+    public $previewsStoreBucketName;
 
     public $previewsQuality = 90;
 
@@ -24,14 +33,35 @@ class Module extends \yii\base\Module
     public function init()
     {
         parent::init();
-        if ($this->imagesStoreStorageName === null) {
+        if ($this->imagesStoreBucketName === null) {
             throw new InvalidConfigException('Необходимо установить название хранилища для загрузки изображений \'Module::$imagesStoreStorageName\'.');
         }
-        if ($this->previewsStoreStorageName === null) {
-            $this->previewsStoreStorageName = $this->imagesStoreStorageName;
+        if ($this->previewsStoreBucketName === null) {
+            $this->previewsStoreBucketName = $this->imagesStoreBucketName;
         }
         if (!in_array($this->driver, ['GD', 'Imagick'])) {
             throw new InvalidConfigException('Поддерживаются только следующие графические библиотеки: GD, Imagick.');
+        }
+    }
+
+    public function setStorage($value)
+    {
+        if (is_string($value)) {
+            $this->_storage = $value;
+        } else {
+            $this->_storage = Yii::createObject($value);
+        }
+    }
+
+    /**
+     * @return \snewer\storage\StorageManager
+     */
+    public function getStorage()
+    {
+        if (is_string($this->_storage)) {
+            return Yii::$app->get($this->_storage, true);
+        } else {
+            return $this->_storage;
         }
     }
 

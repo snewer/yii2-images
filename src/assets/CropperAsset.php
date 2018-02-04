@@ -17,8 +17,4 @@ class CropperAsset extends AssetBundle
         'cropper.min.js'
     ];
 
-    public $depends = [
-        'yii\web\JqueryAsset'
-    ];
-
 }

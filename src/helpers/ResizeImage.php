@@ -2,12 +2,19 @@
 
 namespace snewer\images\helpers;
 
-use Yii;
 use yii\web\NotFoundHttpException;
 use snewer\images\models\Image;
 
 class ResizeImage
 {
+
+    protected function prepareConfiguration($configuration)
+    {
+        if (!isset($configuration['class'])) {
+            $configuration['class'] = 'snewer\images\tools\resizers\ResizeAndCrop';
+        }
+        return $configuration;
+    }
 
     /**
      * @param Image $imageModel
@@ -16,9 +23,8 @@ class ResizeImage
      */
     public static function getByImageModel(Image $imageModel, array $configuration)
     {
-        /* @var \snewer\images\tools\Resizer $resizer */
-        $resizer = Yii::createObject($configuration);
-        return $resizer->process($imageModel);
+        $configuration = self::prepareConfiguration($configuration);
+        return $imageModel->getOrCreatePreview(0, 0, $configuration);
     }
 
     /**

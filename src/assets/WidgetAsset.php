@@ -16,8 +16,4 @@ class WidgetAsset extends AssetBundle
         'script.js',
     ];
 
-    public $depends = [
-        'yii\web\JqueryAsset'
-    ];
-
 }

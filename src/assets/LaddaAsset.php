@@ -19,8 +19,4 @@ class LaddaAsset extends AssetBundle
         'ladda.jquery.min.js',
     ];
 
-    public $depends = [
-        'yii\web\JqueryAsset',
-    ];
-
 }

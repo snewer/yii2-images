@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "yiisoft/yii2": "*",
+    "yiisoft/yii2": "^2.0.13",
     "intervention/image": "^2.4",
     "snewer/yii2-storage": "^3.0"
   },

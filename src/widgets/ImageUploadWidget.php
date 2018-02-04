@@ -8,7 +8,7 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\helpers\Json;
 use snewer\images\assets\WidgetAsset;
-use snewer\images\models\ImageUpload;
+use snewer\images\tools\resizers\Resizer;
 
 class ImageUploadWidget extends InputWidget
 {
@@ -19,21 +19,21 @@ class ImageUploadWidget extends InputWidget
 
     public $aspectRatio = 0;
 
-    public $minWidth = ImageUpload::MIN_SIZE;
+    public $minWidth = Resizer::MIN_SIZE;
 
-    public $minHeight = ImageUpload::MIN_SIZE;
+    public $minHeight = Resizer::MIN_SIZE;
 
-    public $maxWidth = ImageUpload::MAX_SIZE;
+    public $maxWidth = Resizer::MAX_SIZE;
 
-    public $maxHeight = ImageUpload::MAX_SIZE;
+    public $maxHeight = Resizer::MAX_SIZE;
 
     public $bgColor = '#FFFFFF';
 
     public $supportAC = false;
 
-    public $previews = [];
-
     public $emptyImage;
+
+    public $jqueryAsset = 'yii\web\JqueryAsset';
 
     public $cropperAsset = 'snewer\images\assets\CropperAsset';
 
@@ -52,8 +52,11 @@ class ImageUploadWidget extends InputWidget
         return Html::hiddenInput($name, $value, $this->options);
     }
 
-    protected function registerAdditionalAssets()
+    protected function registerAssets()
     {
+        if ($this->jqueryAsset) {
+            $this->view->registerAssetBundle($this->jqueryAsset);
+        }
         if ($this->cropperAsset) {
             $this->view->registerAssetBundle($this->cropperAsset);
         }
@@ -66,26 +69,25 @@ class ImageUploadWidget extends InputWidget
         if ($this->magnificPopupAsset) {
             $this->view->registerAssetBundle($this->magnificPopupAsset);
         }
-    }
-
-    public function init()
-    {
-        parent::init();
-        $this->previews[] = [400, 0];
-        $this->registerAdditionalAssets();
         $widgetAsset = $this->view->registerAssetBundle(WidgetAsset::className());
         if ($this->emptyImage === null) {
             $this->emptyImage = Yii::$app->assetManager->getAssetUrl($widgetAsset, 'no-image.png');
         }
     }
 
+    public function init()
+    {
+        parent::init();
+        $this->registerAssets();
+    }
+
     public function run()
     {
         $options = [
             'urls' => [
-                'getImage' => Url::to(['images/image/get']),
-                'imageProxy' => Url::to(['images/image/proxy']),
-                'imageUpload' => Url::to(['images/image/upload'])
+                'getImage' => Url::to(['/images/image/get']),
+                'imageProxy' => Url::to(['/images/image/proxy']),
+                'imageUpload' => Url::to(['/images/image/upload'])
             ],
             'trim' => (bool)$this->trim,
             'aspectRatio' => (float)$this->aspectRatio,

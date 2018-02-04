@@ -4,7 +4,6 @@ namespace snewer\images\models;
 
 use Yii;
 use yii\db\ActiveRecord;
-use yii\base\InvalidCallException;
 use yii\behaviors\TimestampBehavior;
 use yii\behaviors\BlameableBehavior;
 use snewer\images\ModuleTrait;
@@ -14,9 +13,9 @@ use snewer\images\ModuleTrait;
  *
  * From database:
  * @property $id
- * @property $type
+ * @property $preview_hash
  * @property $parent_id
- * @property $storage_id
+ * @property $bucket_id
  * @property $path
  * @property $integrity
  * @property $width
@@ -31,8 +30,8 @@ use snewer\images\ModuleTrait;
  * via magic:
  * @property $url
  * @property $previews
- * @property \snewer\storage\AbstractStorage $storage
- * @property string $storageName
+ * @property \snewer\storage\AbstractBucket $bucket
+ * @property string $bucketName
  * @property string $source
  */
 class Image extends ActiveRecord
@@ -61,29 +60,28 @@ class Image extends ActiveRecord
         return '{{%images}}';
     }
 
-    private $_storageName;
+    private $_bucketName;
 
-    public function getStorageName()
+    public function getBucketName()
     {
-        if ($this->_storageName === null) {
-            $storageModel = ImageStorage::findById($this->storage_id, true);
-            $this->_storageName = $storageModel->name;
+        if ($this->_bucketName === null) {
+            $bucketModel = ImageBucket::findById($this->bucket_id, true);
+            $this->_bucketName = $bucketModel->name;
         }
-        return $this->_storageName;
+        return $this->_bucketName;
     }
 
     /**
-     * @return \snewer\storage\AbstractStorage
+     * @return \snewer\storage\AbstractBucket
      */
-    public function getStorage()
+    public function getBucket()
     {
-        $storage = Yii::$app->get('storage', true);
-        return $storage->getStorage($this->storageName);
+        return $this->getModule()->getStorage()->getBucket($this->bucketName);
     }
 
     public function getUrl()
     {
-        return $this->getStorage()->getUrl($this->path);
+        return $this->getBucket()->getUrl($this->path);
     }
 
     private $_source = false;
@@ -91,7 +89,7 @@ class Image extends ActiveRecord
     public function getSource()
     {
         if ($this->_source === false) {
-            $this->_source = $this->getStorage()->getSource($this->path);
+            $this->_source = $this->getBucket()->getSource($this->path);
         }
         return $this->_source;
     }
@@ -108,8 +106,7 @@ class Image extends ActiveRecord
      */
     public function isSupportsAC()
     {
-        $path = explode('.', $this->path);
-        return array_pop($path) == 'png';
+        return array_pop(explode('.', $this->path)) == 'png';
     }
 
     /**
@@ -126,16 +123,14 @@ class Image extends ActiveRecord
     /**
      * Метод для получения существующего превью изображения заданного размера и типа.
      * Вернется false, если првеью не существует.
-     * @param $width
-     * @param $height
-     * @param $type
+     * @param $hash
      * @return false|Image
      */
-    private function findPreview($width, $height, $type)
+    private function findPreview($hash)
     {
         foreach ($this->previews as $preview) {
-            /* @var $preview self */
-            if ($preview->width == $width && $preview->height == $height && $preview->type == $type) {
+            /* @var self $preview */
+            if ($preview->preview_hash == $hash) {
                 return $preview;
             }
         }
@@ -152,28 +147,30 @@ class Image extends ActiveRecord
      */
     public function getOrCreatePreview($width = 0, $height = 0, $configuration = null)
     {
-        if ($width <= 0 && $height <= 0) {
-            throw new InvalidCallException('Для превью необходимо указать ширину и/или высоту.');
-        } elseif ($width <= 0) {
-            $width = $height * $this->width / $this->height;
-        } elseif ($height <= 0) {
-            $height = $width * $this->height / $this->width;
-        }
+
+        /* if ($width <= 0 && $height <= 0) {
+             throw new InvalidCallException('Для превью необходимо указать ширину и/или высоту.');
+         } elseif ($width <= 0) {
+             $width = $height * $this->width / $this->height;
+         } elseif ($height <= 0) {
+             $height = $width * $this->height / $this->width;
+         }*/
         if ($configuration === null) {
             $configuration = [
-                'class' => 'snewer\images\tools\resizers\ResizeToBox',
-                'width' => $width,
-                'height' => $height
+                'class' => 'snewer\images\tools\resizers\ResizeAndCrop',
             ];
-        } elseif (is_array($configuration)) {
-            $configuration['width'] = $width;
-            $configuration['height'] = $height;
-        } elseif (is_object($configuration)) {
-            $configuration->width = $width;
-            $configuration->height = $height;
         }
+
+        if ($width > 0) {
+            $configuration['width'] = $width;
+        }
+
+        if ($height > 0) {
+            $configuration['height'] = $height;
+        }
+
         $resizer = is_object($configuration) ? $configuration : Yii::createObject($configuration);
-        $preview = $this->findPreview($width, $height, $resizer->getType());
+        $preview = $this->findPreview($resizer->getHash());
         if (!$preview) {
             $preview = $this->createPreview($resizer);
             $relatedPreviews = $this->previews ?: [];
@@ -193,12 +190,12 @@ class Image extends ActiveRecord
         $uploader = ImageUpload::extend($this);
         $uploader->applyTool($resizer);
         $preview = $uploader->upload(
-            $this->getModule()->previewsStoreStorageName,
+            $this->getModule()->previewsStoreBucketName,
             $this->isSupportsAC(),
             $this->getModule()->previewsQuality
         );
         $preview->parent_id = $this->id;
-        $preview->type = $resizer->getType();
+        $preview->preview_hash = $resizer->getHash();
         $preview->save(false);
         $relatedPreviews = $this->previews ?: [];
         $relatedPreviews[] = $preview;

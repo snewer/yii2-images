@@ -2,8 +2,6 @@
 
 namespace snewer\images\tools\resizers;
 
-use snewer\images\models\ImageTypes;
-
 class ResizeAndCrop extends Resizer
 {
 
@@ -11,31 +9,34 @@ class ResizeAndCrop extends Resizer
 
     public $height;
 
-
-    public static function getType()
+    public function getHash()
     {
-        return ImageTypes::RESIZED_AND_CROPPED;
+        $params = [
+            $this->width,
+            $this->height
+        ];
+        return 'resize_and_crop:' . implode(':', $params);
     }
 
     /**
      * @inheritdoc
      */
-    public function process($image)
+    public function process()
     {
 
-        $width = $image->width();
-        $height = $image->height();
+        $width = $this->image->width();
+        $height = $this->image->height();
         if ($width != $this->width || $height != $this->height) {
-            $originalAR = $width / $height;
-            if ($originalAR > $this->width / $this->height) {
+            $ar = $width / $height;
+            if ($ar > $this->width / $this->height) {
                 $height = $this->height;
-                $width = $height * $originalAR;
+                $width = $height * $ar;
             } else {
                 $width = $this->width;
-                $height = $width / $originalAR;
+                $height = $width / $ar;
             }
-            $image->resize($width, $height);
-            $image->crop($this->width, $this->height, ceil(($width - $this->width) / 2), ceil(($height - $this->height) / 2));
+            $this->image->resize($width, $height);
+            $this->image->crop($this->width, $this->height, ceil(($width - $this->width) / 2), ceil(($height - $this->height) / 2));
         }
 
     }

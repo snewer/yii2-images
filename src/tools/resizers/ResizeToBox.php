@@ -2,19 +2,9 @@
 
 namespace snewer\images\tools\resizers;
 
-use snewer\images\models\ImageTypes;
-
 class ResizeToBox extends Resizer
 {
 
-    /**
-     * Минимальный размер стороны изображения.
-     */
-    const MIN_SIZE = 1;
-
-    /**
-     * Максимальный размер стороны изображения.
-     */
     const MAX_SIZE = 10000;
 
     public $width = 0;
@@ -36,18 +26,28 @@ class ResizeToBox extends Resizer
     /**
      * @inheritdoc
      */
-    public static function getType()
+    public function getHash()
     {
-        return ImageTypes::RESIZED_TO_BOX;
+        $params = [
+            $this->width,
+            $this->height,
+            $this->minWidth,
+            $this->minHeight,
+            $this->maxWidth,
+            $this->maxHeight,
+            $this->aspectRatio,
+            $this->bgColor
+        ];
+        return 'resize_self_background:' . implode(':', $params);
     }
 
     /**
      * @inheritdoc
      */
-    public function process($image)
+    public function process()
     {
-        $width = $image->width();
-        $height = $image->height();
+        $width = $this->image->width();
+        $height = $this->image->height();
         $originalAR = $width / $height;
         if ($this->width > 0 && $this->height > 0) {
             // требуемые размеры полотна указаны явно
@@ -99,9 +99,9 @@ class ResizeToBox extends Resizer
                 $height = $canvasHeight;
                 $width = ceil($height * $originalAR);
             }
-            $image->resize($width, $height);
+            $this->image->resize($width, $height);
         }
-        $image->resizeCanvas($canvasWidth, $canvasHeight, 'center', false, $this->bgColor);
+        $this->image->resizeCanvas($canvasWidth, $canvasHeight, 'center', false, $this->bgColor);
     }
 
 }

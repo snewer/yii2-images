@@ -75,10 +75,10 @@ class ImageUpload
     {
         $quality = min(max($quality, 30), 100);
         $image = new Image();
-        $storageModel = ImageStorage::findOrCreateByName($storageName);
-        $image->storage_id = $storageModel->id;
+        $storageModel = ImageBucket::findOrCreateByName($storageName);
+        $image->bucket_id = $storageModel->id;
         $source = trim($this->image->encode($supportAC ? 'png' : 'jpeg', $quality));
-        $path = $image->storage->upload($source, $supportAC ? 'png' : 'jpg');
+        $path = $image->bucket->upload($source, $supportAC ? 'png' : 'jpg');
         $image->path = $path;
         $image->integrity = 'sha384-' . base64_encode(hash('sha384', $source, true));
         $image->quality = $quality;

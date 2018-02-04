@@ -4,6 +4,11 @@ namespace snewer\images;
 
 use Yii;
 
+/**
+ * Class ModuleTrait
+ * @package snewer\images
+ * @property Module $module
+ */
 trait ModuleTrait
 {
 
@@ -12,7 +17,7 @@ trait ModuleTrait
      */
     public function getModule()
     {
-        return Yii::$app->getModule('images');
+        return Yii::$app->getModule('images', true);
     }
 
 }

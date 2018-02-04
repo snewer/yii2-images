@@ -13,9 +13,9 @@ class Trim extends Tool
 
     public $feather = 0;
 
-    public function process($image)
+    public function process()
     {
-        $image->trim($this->base, $this->away, $this->tolerance, $this->feather);
+        $this->image->trim($this->base, $this->away, $this->tolerance, $this->feather);
     }
 
 }
