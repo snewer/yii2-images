@@ -2,6 +2,12 @@
 
 namespace snewer\images\tools\resizers;
 
+/**
+ * Пропорционально изменяет размер изображения до заданной высоты.
+ *
+ * Class ResizeToHeight
+ * @package snewer\images\tools\resizers
+ */
 class ResizeToHeight extends Resizer
 {
 

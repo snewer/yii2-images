@@ -2,9 +2,18 @@
 
 namespace snewer\images\tools\resizers;
 
+use yii\base\InvalidConfigException;
 use Intervention\Image\ImageManager;
 use snewer\images\ModuleTrait;
 
+/**
+ * Изменяет размер изображения с сохранением пропорций.
+ * Изображение не обрезается.
+ * Пропорционально уменьшенное изображение накладывается на искаженное фоновое изображение.
+ *
+ * Class ResizeBackground
+ * @package snewer\images\tools\resizers
+ */
 class ResizeBackground extends Resizer
 {
 
@@ -33,6 +42,18 @@ class ResizeBackground extends Resizer
             $this->pixelate
         ];
         return 'resize_self_background:' . implode(':', $params);
+    }
+
+    public function init()
+    {
+        if ($this->width <= 0) {
+            throw new InvalidConfigException('Необходимо указать ширину.');
+        }
+        if ($this->height <= 0) {
+            throw new InvalidConfigException('Необходимо указать высоту.');
+        }
+        $this->width = ceil($this->width);
+        $this->height = ceil($this->height);
     }
 
     /**

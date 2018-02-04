@@ -5,12 +5,13 @@ namespace snewer\images\tools\resizers;
 use yii\base\InvalidConfigException;
 
 /**
- * Изменяет размер изображения без сохранения пропорций.
+ * Изменяет размер изображения с сохранением пропорций.
+ * Участки изображения, не вместившиеся в область обрезаются.
  *
- * Class Resize
+ * Class ResizeBestFit
  * @package snewer\images\tools\resizers
  */
-class Resize extends Resizer
+class ResizeBestFit extends Resizer
 {
 
     public $width;
@@ -19,7 +20,11 @@ class Resize extends Resizer
 
     public function getHash()
     {
-        return 'resize:' . $this->width . ':' . $this->height;
+        $params = [
+            $this->width,
+            $this->height
+        ];
+        return 'resize_best_fit:' . implode(':', $params);
     }
 
     public function init()
@@ -34,9 +39,12 @@ class Resize extends Resizer
         $this->height = ceil($this->height);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function process()
     {
-        $this->image->resize($this->width, $this->height);
+        $this->image->fit($this->width, $this->height);
     }
 
 }

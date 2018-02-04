@@ -2,6 +2,16 @@
 
 namespace snewer\images\tools\resizers;
 
+use yii\base\InvalidConfigException;
+
+/**
+ * Изменяет размер изображения с сохранением пропорций.
+ * Пустые области изображения закрашиваются фоновым цветом.
+ * Можно указать минимальные и максимальные размеры изображения.
+ *
+ * Class ResizeToBox
+ * @package snewer\images\tools\resizers
+ */
 class ResizeToBox extends Resizer
 {
 
@@ -39,6 +49,18 @@ class ResizeToBox extends Resizer
             $this->bgColor
         ];
         return 'resize_self_background:' . implode(':', $params);
+    }
+
+    public function init()
+    {
+        if ($this->width <= 0) {
+            throw new InvalidConfigException('Необходимо указать ширину.');
+        }
+        if ($this->height <= 0) {
+            throw new InvalidConfigException('Необходимо указать высоту.');
+        }
+        $this->width = ceil($this->width);
+        $this->height = ceil($this->height);
     }
 
     /**
