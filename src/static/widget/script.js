@@ -1,6 +1,3 @@
-// https://habrahabr.ru/post/113073/
-// http://stackoverflow.com/questions/5627284/pass-in-an-array-of-deferreds-to-when
-
 (function ($) {
 
     function validateImageFile(file) {
@@ -8,33 +5,32 @@
     }
 
     $.fn.ImagesWidget = function (options) {
-        // id изображения, открытого в модельном окне в данный момент
-        var selectedImageIndex = -1;
+
+        var image;
+
+        var $input = this.first();
+
         var modalDisabled = false;
+
         var cropperIsInit = false;
-        // изображения, с которым работает модальное окно
-        var images = [];
-        var input = this.first();
-        // @formatter:off
-        var modalHtml = '<div class="imagesWidget modal inmodal" tabindex="-1" aria-hidden="true">' +
-                '<div class="modal-dialog modal-lg">' +
+
+        var modalHtml =
+            // @formatter:off
+            '<div class="image-upload-widget-modal modal inmodal" tabindex="-1" aria-hidden="true">' +
+                '<div class="modal-dialog">' +
                     '<div class="modal-content animated bounceInRight">' +
                             '<div class="modal-footer" style="border-top: none">' +
                                 '<h5 class="pull-left">Загрузка изображения</h5>' +
-                                '<button type="button" class="btn btn-primary">' +
+                                '<button type="button" class="image-upload-widget-modal-rotate-right-btn btn btn-primary">' +
                                     '<span class="fa fa-rotate-right"></span>' +
                                 '</button>' +
-                                '<button type="button" class="btn btn-primary">' +
+                                '<button type="button" class="image-upload-widget-modal-rotate-left-btn btn btn-primary">' +
                                     '<span class="fa fa-rotate-left"></span>' +
                                 '</button>' +
                             '</div>' +
                             '<table style="width: 100%">' +
                                 '<tbody>' +
                                     '<tr style="vertical-align: top">' +
-                                        '<td style="width: 150px">' +
-                                            '<div class="previews">' +
-                                            '</div>' +
-                                        '</td>' +
                                         '<td>' +
                                             '<div class="cropper-wrapper">' +
                                                 '<img src="#" style="display: none">' +
@@ -44,152 +40,106 @@
                                 '</tbody>' +
                             '</table>' +
                             '<div class="modal-footer" style="border-top: none">' +
-                                '<button type="button" class="btn btn-white cancelUpload" data-dismiss="modal">Отмена</button>' +
-                                '<button type="button" class="btn btn-primary ladda-button upload" data-style="expand-right">' +
+                                '<button type="button" class="btn btn-white" data-dismiss="modal">Отмена</button>' +
+                                '<button type="button" class="btn btn-primary ladda-button image-upload-widget-modal-upload-btn" data-style="expand-right">' +
                                     'Зарузить выбранное' +
                                 '</button>' +
                             '</div>' +
                     '</div>' +
                 '</div>' +
             '</div>';
-        // @formatter:on
-        var modal = $(modalHtml);
+            // @formatter:on
 
-        var uploadBtn = modal.find('.upload').first();
-        var cancelUploadBtn = modal.find('.cancelUpload').first();
-        var modalDialog = modal.find('.modal-dialog').first();
-        var previews = modal.find('.previews').first();
-        var cropperImage = modal.find('.cropper-wrapper img').first();
-        var rotateLeft = modal.find('.fa-rotate-left');
-        var rotateRight = modal.find('.fa-rotate-right');
+        var $modal = $(modalHtml);
 
-        rotateRight.on('click', function () {
-            //console.log(cropperImage);
-            console.log(123);
-            cropperImage.cropper('rotate', 45);
-        });
-        rotateLeft.on('click', function () {
-            cropperImage.cropper('rotate', -45);
-        });
+        var $uploadBtn = $modal.find('.image-upload-widget-modal-upload-btn').first();
 
-        uploadBtn.ladda();
-        // инициализируем модальное окно
-        input.after(modal);
-        modal.modal({
-            backdrop: 'static',
-            keyboard: false,
-            show: false
-        });
+        var $cropperImage = $modal.find('.cropper-wrapper img').first();
+
+        var $rotateLeft = $modal.find('.image-upload-widget-modal-rotate-left-btn');
+
+        var $rotateRight = $modal.find('.image-upload-widget-modal-rotate-right-btn');
+
+        var $widget = $(
+            // @formatter:off
+            '<div class="image-upload-widget">' +
+                '<div class="uploaded-image-container-wrapper">' +
+                    '<div class="uploaded-image-container">' +
+                        '<div class="uploaded-image-preview">' +
+                            '<img src="' + options.emptyImage + '">' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="image-upload-tools">' +
+                    '<span class="image-upload-tools-clickable select-image-from-device">Выбрать файл с компьютера</span> ' +
+                    '<span class="image-upload-tools-clickable select-image-from-url">или по URL</span>' +
+                '</div>' +
+            '</div>'
+            // @formatter:on
+        );
+        var $widgetImageContainer = $widget.find('.uploaded-image-container-wrapper');
 
         function showModal() {
-            modal.modal('show');
+            $modal.modal('show');
         }
 
         function hideModal() {
-            modal.modal('hide');
+            $modal.modal('hide');
         }
 
         function disableModal() {
-            previews.addClass('disabled');
-            modal.find('input, button, textarea').prop('disabled', true);
-            cropperImage.cropper('disable');
+            $modal.find('input, button, textarea').prop('disabled', true);
+            $cropperImage.cropper('disable');
             modalDisabled = true;
         }
 
         function enableModal() {
-            previews.removeClass('disabled');
-            modal.find('input, button, textarea').prop('disabled', false);
-            cropperImage.cropper('enable');
+            $modal.find('input, button, textarea').prop('disabled', false);
+            $cropperImage.cropper('enable');
             modalDisabled = false;
         }
 
-        function startUploadImages() {
-            previews.html('');
-            if (images.length > 1) {
-                previews.parents('td').first().show();
-                modalDialog.addClass('modal-lg');
-            } else {
-                previews.parents('td').first().hide();
-                modalDialog.removeClass('modal-lg');
-            }
-            $.each(images, function (index, image) {
-                // @formatter:off
-                image.$preview = $(
-                    '<div class="preview">' +
-                        '<div class="delete">&times;</div>' +
-                        '<div class="arrow"></div>' +
-                        '<div class="helper"></div>' +
-                        '<img src="' + image.src + '">' +
-                    '</div>'
-                );
-                // @formatter:on
-                if (index == 0) {
-                    image.$preview.addClass('selected');
-                    if (cropperIsInit) {
-                        cropperImage.cropper('replace', image.src);
-                    } else {
-                        cropperImage.attr('src', image.src);
-                        cropperImage.cropper({
-                            autoCropArea: 1,
-                            aspectRatio: options.aspectRatio > 0 ? options.aspectRatio : NaN,
-                            checkCrossOrigin: false,
-                            guides: false,
-                            checkOrientation: false,
-                            crop: function () {
-                                images[selectedImageIndex].crop = $(this).cropper('getData', true);
-                            }
-                        });
-                        cropperIsInit = true;
-                    }
-                }
-                image.$preview.on('click', function () {
-                    if (modalDisabled) return;
-                    selectedImageIndex = index;
-                    //var image = images[index];
-                    cropperImage.cropper('replace', image.src);
-                    // если ранее изображение обрезали - устанавливаем эти параметры
-                    if (image.crop) {
-                        cropperImage.cropper('setData', image.crop);
-                    }
-                    previews.find('.selected').removeClass('selected');
-                    $(this).addClass('selected');
-                });
-                image.$preview.find('.delete').on('click', function () {
-                    if (modalDisabled) return;
-                    image.deleted = true;
-                    image.src = '';
-                    image.$preview.remove();
-                    if (index == selectedImageIndex) {
-                        var imageClicked = false;
-                        for (var i = index; i < images.length; ++i) {
-                            if (!images[i].deleted) {
-                                images[i].$preview.click();
-                                imageClicked = true;
-                                break;
-                            }
-                        }
-                        if (!imageClicked) {
-                            for (i = index; i >= 0; --i) {
-                                if (!images[i].deleted) {
-                                    images[i].$preview.click();
-                                    imageClicked = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!imageClicked) {
-                            cancelUploadBtn.click();
-                        }
-                    }
-                });
-                previews.append(image.$preview);
-            });
-
-            selectedImageIndex = 0;
-            showModal();
+        function readImageFile(file) {
+            var def = $.Deferred();
+            var fr = new FileReader;
+            fr.onload = function (res) {
+                image = {src: res.target.result};
+                def.resolve();
+            };
+            fr.readAsDataURL(file);
+            return def.promise();
         }
 
-        function uploadImage(image) {
+        function uploadImageFromURL(url) {
+            return $.post(options.urls.imageProxy, {url: url}, function (res) {
+                if (res.success) {
+                    image = {src: res.base64};
+                    startUploadImages();
+                }
+            }, 'json');
+        }
+
+        function startUploadImages() {
+            showModal();
+            if (cropperIsInit) {
+                $cropperImage.cropper('replace', image.src);
+            } else {
+                $cropperImage.attr('src', image.src);
+                $cropperImage.cropper({
+                    autoCropArea: 1,
+                    aspectRatio: options.aspectRatio > 0 ? options.aspectRatio : NaN,
+                    checkCrossOrigin: false,
+                    guides: false,
+                    checkOrientation: false,
+                    crop: function () {
+                        image.crop = $(this).cropper('getData', true);
+                    }
+                });
+                cropperIsInit = true;
+            }
+        }
+
+        function uploadImage() {
             var def = $.Deferred();
             $.post(options.urls.imageUpload, {
                 source: image.src,
@@ -208,10 +158,9 @@
                 // ставим метку, что изображение успешно загружено и очищаем src
                 image.uploaded = true;
                 image.src = '';
-
                 if (uploadRes.success === true) {
-                    showUploadedImageInCollection(uploadRes);
-                    input.val(uploadRes.image.id);
+                    showUploadedImage(uploadRes);
+                    $input.val(uploadRes.image.id);
                     def.resolve(uploadRes);
                 } else {
                     def.reject();
@@ -222,162 +171,24 @@
             return def.promise();
         }
 
-        // загрузка одного изображения
-        uploadBtn.on('click', function () {
-            var _this = $(this);
-            disableModal();
-            _this.ladda('start');
-            _this.find('.ladda-label').text('Идет загрузка...');
-            if (selectedImageIndex >= 0) {
-                uploadImage(images[selectedImageIndex]).done(function () {
-                    enableModal();
-                    _this.find('.ladda-label').text('Загрузить');
-                    _this.ladda('stop');
-                    // если в массиве есть не загруженное и не удаленное изображение
-                    // то не закрываем модальное окно
-                    // иначе - закрываем.
-                    for (var i = 0; i < images.length; ++i) {
-                        if (!images[i].deleted && !images[i].uploaded) {
-                            return;
-                        }
-                    }
-                    hideModal();
-                }).fail(function () {
-                    alert('Загрузить изображене не удалось');
-                });
-            }
-        });
-
-        // @formatter:off
-        var $collection = $('<div class="imagesCollection">' +
-            '<div class="images">' +
-                '<div class="wrapper">' +
-                    '<div class="icontainer">' +
-                        '<div class="image">' +
-                            '<img src="' + options.emptyImage + '">' +
-                        '</div>' +
-                    '</div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="upload-tools">' +
-            '<span class="clickable select1">Выбрать файл с компьютера</span> ' +
-            '<span class="clickable select2">или по URL</span>' +
-            '</div>' +
-            '</div>');
-        // @formatter:on
-
-        var $imagesCollectionContainer = $collection.find('.images');
-
-        input.after($collection);
-
-        // обновляем порядок изображений коллекции на сервере
-        function updateSorting() {
-            var $imagesCollectionImages = $imagesCollectionContainer.find('.wrapper');
-            var data = {};
-            $.each($imagesCollectionImages, function () {
-                data[$(this).data('id')] = $(this).index();
-            });
-            $.post(options.urls.sortImagesCollection, {
-                collection_id: input.val(),
-                data: data
-            });
-        }
-
-
-        function readImageFile(file) {
-            var def = $.Deferred();
-            var fr = new FileReader;
-            fr.onload = function (res) {
-                images.push({src: res.target.result});
-                def.resolve();
-            };
-            fr.readAsDataURL(file);
-            return def.promise();
-        }
-
-        $collection.find('.select1').on('click', function () {
-            var $fileInput = $('<input type="file" style="display:none">');
-            images = [];
-            $('body').append($fileInput);
-            $fileInput.on('change', function () {
-                var files = this.files;
-                var defs = [];
-                for (var i = 0; i < files.length; ++i) {
-                    if (validateImageFile(files[i])) {
-                        defs.push(readImageFile(files[i]));
-                    }
-                }
-                $.when.apply($, defs).done(function () {
-                    startUploadImages();
-                });
-                $fileInput.remove();
-            });
-            $fileInput.click();
-        });
-
-        function uploadImageFromURL(url) {
-            return $.post(options.urls.imageProxy, {url: url}, function (res) {
-                if (res.success) {
-                    images = [{src: res.base64}];
-                    startUploadImages();
-                }
-            }, 'json');
-        }
-
-        $collection.find('.select2').on('click', function () {
-            var url = prompt('Введите ссылку на изображение', 'http://');
-            if (url && url != 'http://') {
-                uploadImageFromURL(url);
-            }
-        });
-
-        $collection[0].ondragover = function () {
-            return false;
-        };
-        $collection[0].ondragleave = function () {
-            return false;
-        };
-        $collection[0].ondrop = function (e) {
-            var files = e.dataTransfer.files;
-            if (files) {
-                var defs = [];
-                for (var i = 0; i < files.length; ++i) {
-                    if (validateImageFile(files[i])) {
-                        defs.push(readImageFile(files[i]));
-                    }
-                }
-                $.when.apply($, defs).done(function () {
-                    if (images.length) {
-                        startUploadImages();
-                    }
-                });
-                e.preventDefault();
-            }
-        };
-
-        function showUploadedImageInCollection(image) {
+        function showUploadedImage(image) {
             var $elem = $(
                 // @formatter:off
-                '<div class="wrapper" data-id="' + image.image.id + '">' +
-                    '<div class="icontainer">' +
-                        '<div class="image">' +
+                    '<div class="uploaded-image-container">' +
+                        '<div class="uploaded-image-preview">' +
                             '<a href="' + image.image.url + '" target="_blank" style="display: block">' +
                                 '<img src="' + image.preview.url + '">' +
                             '</a>' +
                         '</div>' +
-                        '<div class="toolbar">' +
+                        '<div class="uploaded-image-toolbar">' +
                             '<span title="Обрезать изображение" class="edit fa fa-crop"></span>' +
                             '<span title="Удалить изображение" class="remove fa fa-times"></span>' +
                             '<div class="clearfix"></div>' +
                         '</div>' +
-                    '</div>' +
-                '</div>'
+                    '</div>'
                 // @formatter:on
             );
-
-
-            $imagesCollectionContainer.html($elem);
-
+            $widgetImageContainer.html($elem);
             $elem.find('a').magnificPopup({
                 type: 'image',
                 closeOnContentClick: true,
@@ -386,29 +197,97 @@
                     verticalFit: true
                 }
             });
-
             $elem.find('.remove').on('click', function () {
                 if (!confirm('Удалить?')) return;
-                input.val('');
+                $input.val('');
                 $elem.remove();
             });
-
-
             $elem.find('.edit').on('click', function () {
                 uploadImageFromURL(image.image.url);
-                //$elem.remove();
             });
-
         }
 
-        if (input.val() > 0) {
+        $input.after($widget);
+        $input.after($modal);
 
-            $.post(options.urls.getImage, {id: input.val()}, function (res) {
+        $rotateRight.on('click', function () {
+            $cropperImage.cropper('rotate', 45);
+        });
+
+        $rotateLeft.on('click', function () {
+            $cropperImage.cropper('rotate', -45);
+        });
+
+        $uploadBtn.ladda();
+        // инициализируем модальное окно
+
+        $modal.modal({
+            backdrop: 'static',
+            keyboard: false,
+            show: false
+        });
+
+        $uploadBtn.on('click', function () {
+            var _this = $(this);
+            disableModal();
+            _this.ladda('start');
+            _this.find('.ladda-label').text('Идет загрузка...');
+            uploadImage().done(function () {
+                enableModal();
+                _this.find('.ladda-label').text('Загрузить');
+                _this.ladda('stop');
+                hideModal();
+            }).fail(function () {
+                alert('Загрузить изображене не удалось');
+            });
+        });
+
+        $widget.find('.select-image-from-device').on('click', function () {
+            var $fileInput = $('<input type="file" style="display:none">');
+            $('body').append($fileInput);
+            $fileInput.on('change', function () {
+                var file = this.files[0];
+                if (validateImageFile(file)) {
+                    readImageFile(file).done(function () {
+                        startUploadImages();
+                    });
+                }
+                $fileInput.remove();
+            });
+            $fileInput.click();
+        });
+
+        $widget.find('.select-image-from-url').on('click', function () {
+            var url = prompt('Введите ссылку на изображение', 'http://');
+            if (url) {
+                uploadImageFromURL(url);
+            }
+        });
+
+        $widget[0].ondragover = function () {
+            return false;
+        };
+
+        $widget[0].ondragleave = function () {
+            return false;
+        };
+
+        $widget[0].ondrop = function (e) {
+            var file = e.dataTransfer.files[0];
+            if (validateImageFile(file)) {
+                readImageFile(file).done(function () {
+                    startUploadImages();
+                });
+            }
+            e.preventDefault();
+        };
+
+        if ($input.val() > 0) {
+            $.post(options.urls.getImage, {id: $input.val()}, function (res) {
                 if (res.success === true) {
-                    showUploadedImageInCollection(res);
+                    showUploadedImage(res);
                 }
             }, 'json');
-
         }
 
     };

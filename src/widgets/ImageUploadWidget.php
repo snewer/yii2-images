@@ -15,6 +15,8 @@ class ImageUploadWidget extends InputWidget
 
     public $urls = [];
 
+    public $crop = true;
+
     public $trim = false;
 
     public $aspectRatio = 0;
@@ -42,8 +44,6 @@ class ImageUploadWidget extends InputWidget
     public $fontAwesomeAsset = 'snewer\images\assets\FontAwesomeAsset';
 
     public $magnificPopupAsset = 'snewer\images\assets\MagnificPopupAsset';
-
-    protected $multiple = true;
 
     private function getInput()
     {
@@ -89,6 +89,7 @@ class ImageUploadWidget extends InputWidget
                 'imageProxy' => Url::to(['/images/image/proxy']),
                 'imageUpload' => Url::to(['/images/image/upload'])
             ],
+            'crop' => (bool)$this->crop,
             'trim' => (bool)$this->trim,
             'aspectRatio' => (float)$this->aspectRatio,
             'minWidth' => (int)$this->minWidth,

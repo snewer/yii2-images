@@ -111,7 +111,7 @@ class ImageController extends Controller
         Yii::$app->response->format = Response::FORMAT_JSON;
         $url = trim(Yii::$app->request->post('url'));
         if (filter_var($url, FILTER_VALIDATE_URL)) {
-            $image = @file_get_contents($url);
+            $image = file_get_contents($url);
             if ($image) {
                 $size = strlen($image);
                 if ($size > 0) {
