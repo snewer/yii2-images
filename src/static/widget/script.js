@@ -155,8 +155,6 @@
                     crop: image.crop || {}
                 }
             }).done(function (uploadRes) {
-                // ставим метку, что изображение успешно загружено и очищаем src
-                image.uploaded = true;
                 image.src = '';
                 if (uploadRes.success === true) {
                     showUploadedImage(uploadRes);
@@ -165,8 +163,6 @@
                 } else {
                     def.reject();
                 }
-            }).fail(function () {
-                def.reject('Не удалось загрузить изображение');
             });
             return def.promise();
         }
@@ -200,7 +196,14 @@
             $elem.find('.remove').on('click', function () {
                 if (!confirm('Удалить?')) return;
                 $input.val('');
-                $elem.remove();
+                var html = '<div class="uploaded-image-container-wrapper">' +
+                    '<div class="uploaded-image-container">' +
+                    '<div class="uploaded-image-preview">' +
+                    '<img src="' + options.emptyImage + '">' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+                $widgetImageContainer.html(html);
             });
             $elem.find('.edit').on('click', function () {
                 uploadImageFromURL(image.image.url);
@@ -239,6 +242,10 @@
                 hideModal();
             }).fail(function () {
                 alert('Загрузить изображене не удалось');
+                enableModal();
+                _this.find('.ladda-label').text('Загрузить');
+                _this.ladda('stop');
+                hideModal();
             });
         });
 

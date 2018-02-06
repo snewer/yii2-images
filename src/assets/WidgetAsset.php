@@ -9,9 +9,11 @@ class WidgetAsset extends AssetBundle
 
     public $sourcePath = '@snewer/images/static/widget';
 
-    public $css = ['style.min.css'];
+    // todo: использовать минифицированные версии.
 
-    public $js = ['script.min.js'];
+    public $css = ['style.css'];
+
+    public $js = ['script.js'];
 
     // Есть зависимости, но они подключаются отдельно в ImageUploadWidget.
     // Это сделано с той целью, что бы разработчики, использующие данный пакет,
