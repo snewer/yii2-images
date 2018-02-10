@@ -13,7 +13,7 @@ use snewer\images\tools\resizers\Resizer;
 class ImageUploadWidget extends InputWidget
 {
 
-    public $urls = [];
+    public $moduleName = 'images';
 
     public $crop = true;
 
@@ -85,9 +85,9 @@ class ImageUploadWidget extends InputWidget
     {
         $options = [
             'urls' => [
-                'getImage' => Url::to(['/images/image/get']),
-                'imageProxy' => Url::to(['/images/image/proxy']),
-                'imageUpload' => Url::to(['/images/image/upload'])
+                'getImage' => Url::to(['/' . $this->moduleName . '/image/get']),
+                'imageProxy' => Url::to(['/' . $this->moduleName . '/image/proxy']),
+                'imageUpload' => Url::to(['/' . $this->moduleName . '/image/upload'])
             ],
             'crop' => (bool)$this->crop,
             'trim' => (bool)$this->trim,
