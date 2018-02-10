@@ -64,7 +64,7 @@ class ResizeBackgroundImage extends Resizer
         $original = clone $this->image;
         if ($this->background !== null) {
             $imageManager = new ImageManager(['driver' => $this->getModule()->driver]);
-            $image = $imageManager->make($this->background);
+            $this->image = $imageManager->make($this->background);
         }
         $this->image->resize($this->width, $this->height);
         if ($this->greyscale) {
