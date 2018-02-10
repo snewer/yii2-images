@@ -15,21 +15,9 @@ use yii\base\InvalidConfigException;
 class ResizeBackgroundColor extends Resizer
 {
 
-    const MAX_SIZE = 10000;
+    public $width;
 
-    public $width = 0;
-
-    public $height = 0;
-
-    public $minWidth = self::MIN_SIZE;
-
-    public $minHeight = self::MIN_SIZE;
-
-    public $maxWidth = self::MAX_SIZE;
-
-    public $maxHeight = self::MAX_SIZE;
-
-    public $aspectRatio = 0;
+    public $height;
 
     public $bgColor = '#FFFFFF';
 
@@ -41,11 +29,6 @@ class ResizeBackgroundColor extends Resizer
         $params = [
             $this->width,
             $this->height,
-            $this->minWidth,
-            $this->minHeight,
-            $this->maxWidth,
-            $this->maxHeight,
-            $this->aspectRatio,
             $this->bgColor
         ];
         return 'rbc:' . implode(':', $params);
@@ -53,6 +36,15 @@ class ResizeBackgroundColor extends Resizer
 
     public function init()
     {
+        if ($this->width <= 0) {
+            throw new InvalidConfigException('Необходимо указать ширину.');
+        }
+        if ($this->height <= 0) {
+            throw new InvalidConfigException('Необходимо указать высоту.');
+        }
+        // todo: проверка цвета.
+        $this->width = ceil($this->width);
+        $this->height = ceil($this->height);
     }
 
     /**
@@ -63,59 +55,19 @@ class ResizeBackgroundColor extends Resizer
         $width = $this->image->width();
         $height = $this->image->height();
         $originalAR = $width / $height;
-        if ($this->width > 0 && $this->height > 0) {
-            // требуемые размеры полотна указаны явно
-            $canvasWidth = ceil($this->width);
-            $canvasHeight = ceil($this->height);
-            $canvasAR = $canvasWidth / $canvasHeight;
-        } else {
-            if ($this->aspectRatio > 0) {
-                // явно указано требуемое соотношение сторон полотна
-                $canvasAR = $this->aspectRatio;
-            } else {
-                $canvasAR = max($width, $this->minWidth) / max($height, $this->minHeight);
-            }
-            // считаем размеры полотна.
-            if ($originalAR >= $canvasAR) {
-                $canvasWidth = $width;
-                $canvasHeight = ceil($canvasWidth / $canvasAR);
-            } else {
-                $canvasHeight = $height;
-                $canvasWidth = ceil($canvasHeight * $canvasAR);
-            }
-            // полотно шире допустимого значения
-            if ($this->maxWidth > 0 && $this->maxWidth < $canvasWidth) {
-                $canvasWidth = ceil($this->maxWidth);
-                $canvasHeight = ceil($canvasWidth / $canvasAR);
-            }
-            // полотно выше допустимого значения
-            if ($this->maxHeight > 0 && $this->maxHeight < $canvasHeight) {
-                $canvasHeight = ceil($this->maxHeight);
-                $canvasWidth = ceil($canvasHeight * $canvasAR);
-            }
-            // полотно уже допустимого значения
-            if ($this->minWidth > 0 && $this->minWidth > $canvasWidth) {
-                $canvasWidth = ceil($this->minWidth);
-                $canvasHeight = ceil($canvasWidth / $canvasAR);
-            }
-            // полотно ниже допустимого значения
-            if ($this->minHeight > 0 && $this->minHeight > $canvasHeight) {
-                $canvasHeight = ceil($this->minHeight);
-                $canvasWidth = ceil($canvasHeight * $canvasAR);
-            }
-        }
+        $canvasAR = $this->width / $this->height;
         // если изображение не помещается в полотно, то уменьшаем его.
-        if ($width > $canvasWidth || $height > $canvasHeight) {
+        if ($width > $this->width || $height > $this->height) {
             if ($originalAR >= $canvasAR) {
-                $width = $canvasWidth;
+                $width = $this->width;
                 $height = ceil($width / $originalAR);
             } else {
-                $height = $canvasHeight;
+                $height = $this->height;
                 $width = ceil($height * $originalAR);
             }
             $this->image->resize($width, $height);
         }
-        $this->image->resizeCanvas($canvasWidth, $canvasHeight, 'center', false, $this->bgColor);
+        $this->image->resizeCanvas($this->width, $this->height, 'center', false, $this->bgColor);
     }
 
 }

@@ -189,7 +189,7 @@ class Image extends ActiveRecord
         ]);
     }
 
-    public function getPreviewToWith($width)
+    public function getPreviewToWidth($width)
     {
         return $this->getPreviewByConfiguration([
             'class' => 'snewer\images\tools\resizers\ResizeToWidth',
@@ -205,18 +205,13 @@ class Image extends ActiveRecord
         ]);
     }
 
-    public function getPreviewBackgroundColor($width = null, $height = null, $minWidth = null, $minHeight = null, $maxWidth = null, $maxHeight = null, $aspectRatio = null, $bgColor = null)
+    public function getPreviewBackgroundColor($width, $height, $bgColor = '#FFFFFF')
     {
         return $this->getPreviewByConfiguration([
             'class' => 'snewer\images\tools\resizers\ResizeBackgroundColor',
-            'width' => $width ?: 0,
-            'height' => $height ?: 0,
-            'minWidth' => $minWidth ?: Tool::MIN_SIZE,
-            'maxWidth' => $maxWidth ?: Tool::MIN_SIZE,
-            'minHeight' => $minHeight ?: Tool::MAX_SIZE,
-            'maxHeight' => $maxHeight ?: Tool::MAX_SIZE,
-            'aspectRatio' => $aspectRatio ?: 0,
-            'bgColor' => $bgColor ?: '#FFFFFF'
+            'width' => $width,
+            'height' => $height,
+            'bgColor' => $bgColor
         ]);
     }
 
@@ -229,16 +224,16 @@ class Image extends ActiveRecord
         ]);
     }
 
-    public function getPreviewBackgroundImage($width, $height, $background, $greyscale, $blur, $pixelate)
+    public function getPreviewBackgroundImage($width, $height, $background = null, $greyscale = true, $blur = 30, $pixelate = 5)
     {
         return $this->getPreviewByConfiguration([
-            'class' => 'snewer\images\tools\resizers\ResizeBestFit',
+            'class' => 'snewer\images\tools\resizers\ResizeBackgroundImage',
             'width' => $width,
             'height' => $height,
-            'background' => $background ?: null,
-            'greyscale' => $greyscale ?: true,
-            'blur' => $blur ?: 30,
-            'pixelate' => $pixelate ?: 5
+            'background' => $background,
+            'greyscale' => $greyscale,
+            'blur' => $blur,
+            'pixelate' => $pixelate
         ]);
     }
 
