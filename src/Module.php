@@ -27,8 +27,6 @@ class Module extends \yii\base\Module
 
     public $previewsQuality = 80;
 
-    public $previews = [];
-
     public $driver = 'GD';
 
     public $controllerAccess;

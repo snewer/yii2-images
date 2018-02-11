@@ -3,7 +3,6 @@
 namespace snewer\images\controllers;
 
 use yii\web\Controller;
-use yii\filters\AccessControl;
 use snewer\images\ModuleTrait;
 
 /**
