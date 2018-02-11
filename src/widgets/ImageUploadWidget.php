@@ -7,18 +7,10 @@ use yii\widgets\InputWidget;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\helpers\Json;
-use yii\base\InvalidConfigException;
 use snewer\images\assets\WidgetAsset;
 
 class ImageUploadWidget extends InputWidget
 {
-
-    /**
-     * Идентификатор модуля изображений.
-     * @see \snewer\images\Module
-     * @var string|null
-     */
-    public $moduleId = 'images';
 
     /**
      * Ссылка на действие получения изображения.
@@ -124,6 +116,9 @@ class ImageUploadWidget extends InputWidget
         if ($this->jqueryAsset) {
             $this->view->registerAssetBundle($this->jqueryAsset);
         }
+        if ($this->laddaAsset) {
+            $this->view->registerAssetBundle($this->laddaAsset);
+        }
         if ($this->bootstrapAsset) {
             $this->view->registerAssetBundle($this->bootstrapAsset);
         }
@@ -132,9 +127,6 @@ class ImageUploadWidget extends InputWidget
         }
         if ($this->cropperAsset) {
             $this->view->registerAssetBundle($this->cropperAsset);
-        }
-        if ($this->laddaAsset) {
-            $this->view->registerAssetBundle($this->laddaAsset);
         }
         if ($this->fontAwesomeAsset) {
             $this->view->registerAssetBundle($this->fontAwesomeAsset);
@@ -152,17 +144,14 @@ class ImageUploadWidget extends InputWidget
     {
         parent::init();
         $this->registerAssets();
-        if ($this->moduleId === null && ($this->getImageUrl === null || $this->uploadImageUrl === null || $this->proxyImageUrl === null)) {
-            throw new InvalidConfigException('Необходимо задать {moduleId} или {getImageUrl}, {uploadImageUrl}, {proxyImageUrl} свойства.');
-        }
         if ($this->getImageUrl === null) {
-            $this->getImageUrl = Url::to(['/' . $this->moduleId . '/image/get']);
+            $this->getImageUrl = Url::to(['/images/image/get']);
         }
         if ($this->uploadImageUrl === null) {
-            $this->uploadImageUrl = Url::to(['/' . $this->moduleId . '/image/proxy']);
+            $this->uploadImageUrl = Url::to(['/images/image/proxy']);
         }
         if ($this->proxyImageUrl === null) {
-            $this->proxyImageUrl = Url::to(['/' . $this->moduleId . '/image/upload']);
+            $this->proxyImageUrl = Url::to(['/images/image/upload']);
         }
     }
 

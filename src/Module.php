@@ -24,7 +24,7 @@ class Module extends \yii\base\Module
 
     public $previewsStoreBucketName;
 
-    public $previewsQuality = 90;
+    public $previewsQuality = 80;
 
     public $previews = [];
 
@@ -42,6 +42,8 @@ class Module extends \yii\base\Module
         if (!in_array($this->driver, ['GD', 'Imagick'])) {
             throw new InvalidConfigException('Поддерживаются только следующие графические библиотеки: GD, Imagick.');
         }
+        $this->imagesQuality = min(max(ceil($this->imagesQuality), 10), 100);
+        $this->previewsQuality = min(max(ceil($this->previewsQuality), 10), 100);
     }
 
     public function setStorage($value)
