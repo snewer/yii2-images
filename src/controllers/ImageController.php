@@ -3,6 +3,8 @@
 namespace snewer\images\controllers;
 
 use yii\web\Controller;
+use yii\filters\AccessControl;
+use snewer\images\ModuleTrait;
 
 /**
  * Class ImageController
@@ -11,6 +13,15 @@ use yii\web\Controller;
  */
 class ImageController extends Controller
 {
+
+    use ModuleTrait;
+
+    public function behaviors()
+    {
+        return [
+            'access' => $this->getModule()->controllerAccess
+        ];
+    }
 
     public function actions()
     {

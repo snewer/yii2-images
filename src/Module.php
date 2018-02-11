@@ -3,6 +3,7 @@
 namespace snewer\images;
 
 use Yii;
+use yii\filters\AccessControl;
 use yii\base\InvalidConfigException;
 
 /**
@@ -30,6 +31,8 @@ class Module extends \yii\base\Module
 
     public $driver = 'GD';
 
+    public $controllerAccess;
+
     public function init()
     {
         parent::init();
@@ -44,6 +47,17 @@ class Module extends \yii\base\Module
         }
         $this->imagesQuality = min(max(ceil($this->imagesQuality), 10), 100);
         $this->previewsQuality = min(max(ceil($this->previewsQuality), 10), 100);
+        if ($this->controllerAccess === null) {
+            $this->controllerAccess = [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@']
+                    ]
+                ]
+            ];
+        }
     }
 
     public function setStorage($value)
