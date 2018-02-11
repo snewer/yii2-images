@@ -1,3 +1,7 @@
+[**ПРИМЕР ИСПОЛЬЗОВАНИЯ**](http://yii2-images.snewer.ru/).
+
+[(исходный код примера)](https://github.com/snewer/yii2-images-demo).
+
 ## Установка
 
 Модуль распространяется как [composer](http://getcomposer.org/download/) пакет
