@@ -14,6 +14,10 @@ use yii\db\ActiveRecord;
 class ImageBucket extends ActiveRecord
 {
 
+    private static $_buckets;
+
+    private static $_bucketsNamesToIdMap;
+
     /**
      * @inheritdoc
      * @return string
@@ -21,6 +25,22 @@ class ImageBucket extends ActiveRecord
     public static function tableName()
     {
         return '{{%images_buckets}}';
+    }
+
+    private static function loadBuckets()
+    {
+        if (self::$_buckets === null) {
+            self::$_buckets = self::find()->indexBy('id')->all();
+            if (self::$_buckets) {
+                self::$_bucketsNamesToIdMap = [];
+                foreach (self::$_buckets as $id => $bucket) {
+                    self::$_bucketsNamesToIdMap[$bucket->name] = $id;
+                }
+            } else {
+                self::$_buckets = [];
+                self::$_bucketsNamesToIdMap = [];
+            }
+        }
     }
 
     /**
@@ -31,11 +51,11 @@ class ImageBucket extends ActiveRecord
      */
     public static function findById($id, $throwException = false)
     {
-        $model = self::find()->where(['id' => $id])->limit(1)->one();
-        if ($model === null && $throwException) {
+        self::loadBuckets();
+        if (!isset(self::$_buckets[$id]) && $throwException) {
             throw new ErrorException("Хранилище с идентификатором '{$id}' не найдено в базе данных.");
         }
-        return $model;
+        return self::$_buckets[$id];
     }
 
     /**
@@ -46,11 +66,11 @@ class ImageBucket extends ActiveRecord
      */
     public static function findByName($name, $throwException = false)
     {
-        $model = self::find()->where(['name' => $name])->limit(1)->one();
-        if ($model === null && $throwException) {
+        self::loadBuckets();
+        if (!isset(self::$_bucketsNamesToIdMap[$name]) && $throwException) {
             throw new ErrorException("Хранилище с названием '{$name}' не найдено в базе данных.");
         }
-        return $model;
+        return self::$_buckets[self::$_bucketsNamesToIdMap[$name]];
     }
 
     /**
@@ -64,6 +84,8 @@ class ImageBucket extends ActiveRecord
             $model = new self;
             $model->name = $name;
             $model->save(false);
+            self::$_buckets[$model->id] = $model;
+            self::$_bucketsNamesToIdMap[$name] = $model->id;
         }
         return $model;
     }
