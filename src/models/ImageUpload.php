@@ -86,7 +86,6 @@ class ImageUpload
         $image->width = $this->image->width();
         $image->height = $this->image->height();
         $image->source = $source;
-        $image->deleted = 0;
         return $image;
     }
 

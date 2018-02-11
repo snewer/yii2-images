@@ -16,7 +16,7 @@ class GetAction extends Action
         $id = Yii::$app->request->post('id');
         if ($id) {
             $image = Image::findOne($id);
-            $preview = $image->getPreviewBestFit(300, 300);
+            $preview = $image->getPreviewBackgroundColor(300, 300);
             if ($image) {
                 return [
                     'success' => true,

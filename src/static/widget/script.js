@@ -4,7 +4,7 @@
         return file.size > 0 && /^image/.test(file.type);
     }
 
-    $.fn.ImagesWidget = function (options) {
+    $.fn.ImageUploadWidget = function (options) {
 
         var image;
 
@@ -144,12 +144,7 @@
             $.post(options.urls.imageUpload, {
                 source: image.src,
                 options: {
-                    trim: options.trim,
                     aspectRatio: options.aspectRatio,
-                    minWidth: options.minWidth,
-                    minHeight: options.minHeight,
-                    maxWidth: options.maxWidth,
-                    maxHeight: options.maxHeight,
                     supportAC: options.supportAC,
                     bgColor: options.bgColor,
                     crop: image.crop || {}
@@ -241,7 +236,7 @@
                 _this.ladda('stop');
                 hideModal();
             }).fail(function () {
-                alert('Загрузить изображене не удалось');
+                alert('Загрузить изображение не удалось');
                 enableModal();
                 _this.find('.ladda-label').text('Загрузить');
                 _this.ladda('stop');

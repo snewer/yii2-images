@@ -11,6 +11,8 @@ use snewer\images\ModuleTrait;
 class UploadAction extends Action
 {
 
+    public $tools = [];
+
     use ModuleTrait;
 
     private function isTrue($value)
@@ -39,9 +41,13 @@ class UploadAction extends Action
                 'height' => $options['crop']['height']
             ]);
         }
-        if (isset($options['trim']) && $this->isTrue($options['trim'])) {
-            $imageUpload->applyTool('snewer\images\tools\Trim');
+
+        if (is_array($this->tools)) {
+            foreach ($this->tools as $tool) {
+                $imageUpload->applyTool($tool);
+            }
         }
+
         // Загрузка оригинала изображения
         $image = $imageUpload->upload(
             $this->getModule()->imagesStoreBucketName,

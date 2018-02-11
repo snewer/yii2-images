@@ -7,7 +7,6 @@ use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 use yii\behaviors\BlameableBehavior;
 use snewer\images\ModuleTrait;
-use snewer\images\tools\Tool;
 
 /**
  * Class Images
@@ -23,12 +22,8 @@ use snewer\images\tools\Tool;
  * @property $height
  * @property $quality
  * @property $uploaded_at
- * @property $updated_at
  * @property $uploaded_by
- * @property $updated_by
- * @property $deleted
  *
- * via magic:
  * @property $url
  * @property $previews
  * @property \snewer\storage\AbstractBucket $bucket
@@ -46,12 +41,12 @@ class Image extends ActiveRecord
             [
                 'class' => TimestampBehavior::className(),
                 'createdAtAttribute' => 'uploaded_at',
-                'updatedAtAttribute' => 'updated_at'
+                'updatedAtAttribute' => false
             ],
             [
                 'class' => BlameableBehavior::className(),
                 'createdByAttribute' => 'uploaded_by',
-                'updatedByAttribute' => 'updated_by'
+                'updatedByAttribute' => false
             ]
         ];
     }
@@ -115,14 +110,11 @@ class Image extends ActiveRecord
      */
     public function getPreviews()
     {
-        return $this
-            ->hasMany(self::className(), ['parent_id' => 'id'])
-            ->andWhere('deleted = 0')
-            ->orderBy('quality DESC');
+        return $this->hasMany(self::className(), ['parent_id' => 'id']);
     }
 
     /**
-     * Метод для получения существующего превью изображения заданного размера и типа.
+     * Метод для получения существующего превью изображения по указанному хэшу.
      * Вернется false, если првеью не существует.
      * @param $hash
      * @return false|Image
