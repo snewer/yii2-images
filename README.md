@@ -371,7 +371,7 @@ echo $preview->url;
 Необходимо передать до трех аргументов:
 
 - width - ширину требуемой миниатюры;
-- height - высоту.
+- height - высоту;
 - bgColor - цвет фона (не обязательно, по-умолчанию `#FFFFFF`).
 
 ### - getPreviewBackgroundImage(width, height, background, greyscale, blur, pixelate)
