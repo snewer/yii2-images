@@ -3,11 +3,11 @@
 Модуль распространяется как [composer](http://getcomposer.org/download/) пакет
 и устанавливается командой
 ```
-php composer.phar require snewer/yii2-images @dev
+php composer.phar require snewer/yii2-images "^1.0.0@dev"
 ```
 или добавлением
 ```json
-"snewer/yii2-storage": "@dev"
+"snewer/yii2-storage": "^1.0.0@dev"
 ```
 в composer.json файл проекта.
 
