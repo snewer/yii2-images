@@ -55,7 +55,7 @@ class UploadAction extends Action
             $this->getModule()->imagesQuality
         );
         $image->save(false);
-        $preview = $image->getPreviewBestFit(300, 300);
+        $preview = $image->getPreviewBackgroundColor(300, 300);
         Yii::$app->response->format = Response::FORMAT_JSON;
         return [
             'success' => true,
