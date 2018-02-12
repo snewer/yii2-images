@@ -20,30 +20,11 @@ php composer.phar require snewer/yii2-images "^1.0.0@dev"
 ## Добавление миграции
 
 Для работы модуля необходимы таблицы, установить которые
-можно с помощью миграции:
+можно с помощью команды:
 
-1. Создайте новую миграцию командой `yii migrate/create`, например:
 ```
-yii migrate/create init_images_module
+php yii migrate/up --migrationPath=@vendor/snewer/yii2-images/migrations
 ```
-2. Откройте созданную миграцию и унаследуйте ее от класса
-```
-snewer\images\migrations\CreateTablesMigration
-```
-и оставьте тело класса пустым.
-
-Ваша миграция примет примерно следующий вид:
-```php
-<?php
-
-use snewer\images\migrations\CreateTablesMigration;
-
-class m180211_174817_init_images_module extends CreateTablesMigration
-{
-}
-```
-
-3. Примените миграцию командой `yii migrate`.
 
 ## Настройка хранилища изображений
 
