@@ -23,7 +23,7 @@ php composer.phar require snewer/yii2-images "^1.0.0@dev"
 можно с помощью команды:
 
 ```
-php yii migrate/up --migrationPath=@vendor/snewer/yii2-images/migrations
+php yii migrate/up --migrationPath=@vendor/snewer/yii2-images/src/migrations
 ```
 
 ## Настройка хранилища изображений
