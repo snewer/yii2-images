@@ -13,6 +13,14 @@ class ImageUploadWidget extends InputWidget
 {
 
     /**
+     * Идентификатор используемого модуля.
+     * Используется для генерации ссылок по-умолчанию
+     * в методе init().
+     * @var string
+     */
+    public $moduleId = 'images';
+
+    /**
      * Ссылка на действие получения изображения.
      * @see \snewer\images\actions\GetAction
      * @var string|null
@@ -104,6 +112,9 @@ class ImageUploadWidget extends InputWidget
      */
     public $magnificPopupAsset = 'snewer\images\assets\MagnificPopupAsset';
 
+    /**
+     * @return string
+     */
     private function getInput()
     {
         $name = $this->hasModel() ? Html::getInputName($this->model, $this->attribute) : $this->name;
@@ -145,13 +156,13 @@ class ImageUploadWidget extends InputWidget
         parent::init();
         $this->registerAssets();
         if ($this->getImageUrl === null) {
-            $this->getImageUrl = Url::to(['/images/image/get']);
+            $this->getImageUrl = Url::to(['/' . $this->moduleId . '/image/get']);
         }
         if ($this->uploadImageUrl === null) {
-            $this->uploadImageUrl = Url::to(['/images/image/proxy']);
+            $this->uploadImageUrl = Url::to(['/' . $this->moduleId . '/image/proxy']);
         }
         if ($this->proxyImageUrl === null) {
-            $this->proxyImageUrl = Url::to(['/images/image/upload']);
+            $this->proxyImageUrl = Url::to(['/' . $this->moduleId . '/image/upload']);
         }
     }
 
