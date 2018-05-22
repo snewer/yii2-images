@@ -102,7 +102,8 @@ class Image extends ActiveRecord
      */
     public function isSupportsAC()
     {
-        return array_pop(explode('.', $this->path)) == 'png';
+        $path = explode('.', $this->path);
+        return array_pop($path) == 'png';
     }
 
     /**
