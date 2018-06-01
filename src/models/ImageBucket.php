@@ -56,7 +56,7 @@ class ImageBucket extends ActiveRecord
     {
         self::loadBuckets();
         $id = (int)$id;
-        if (!isset(self::$_buckets[$id]) && $throwException) {
+        if (!isset(self::$_buckets[$id])) {
             if ($throwException) {
                 throw new ErrorException("Хранилище с идентификатором '{$id}' не найдено в базе данных.");
             } else {
@@ -75,7 +75,7 @@ class ImageBucket extends ActiveRecord
     public static function findByName($name, $throwException = false)
     {
         self::loadBuckets();
-        if (!isset(self::$_bucketsNamesToIdMap[$name]) && $throwException) {
+        if (!isset(self::$_bucketsNamesToIdMap[$name])) {
             if ($throwException) {
                 throw new ErrorException("Хранилище с названием '{$name}' не найдено в базе данных.");
             } else {
