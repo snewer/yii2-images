@@ -117,8 +117,16 @@ class ImageUploadWidget extends InputWidget
      */
     private function getInput()
     {
-        $name = $this->hasModel() ? Html::getInputName($this->model, $this->attribute) : $this->name;
-        $value = $this->hasModel() ? Html::getAttributeValue($this->model, $this->attribute) : $this->value;
+        if (isset($this->options['name'])) {
+            $name = $this->options['name'];
+        } else {
+            $name = $this->hasModel() ? Html::getInputName($this->model, $this->attribute) : $this->name;
+        }
+        if (isset($this->options['value'])) {
+            $value = $this->options['value'];
+        } else {
+            $value = $this->hasModel() ? Html::getAttributeValue($this->model, $this->attribute) : $this->value;
+        }
         return Html::hiddenInput($name, $value, $this->options);
     }
 
