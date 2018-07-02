@@ -1,5 +1,7 @@
 <?php
 
+namespace snewer\images\migrations;
+
 use yii\db\Migration;
 
 class m180211_174817_init_images_module extends Migration
