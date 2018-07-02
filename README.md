@@ -26,6 +26,27 @@ php composer.phar require snewer/yii2-images "^1.0.0@dev"
 php yii migrate/up --migrationPath=@vendor/snewer/yii2-images/src/migrations
 ```
 
+Или можно добавить путь к миграциям в migrationNamespaces в настройках
+controllerMap консольного приложения:
+```php
+'controllerMap' => [
+    // ...
+    'migrate' => [
+        'class' => 'yii\console\controllers\MigrateController',
+        'migrationPath' => null,
+        'migrationNamespaces' => [
+            // ...
+            'snewer\images\migrations',
+        ],
+    ],
+],
+```
+
+После чего запустить команду `migrate/up`:
+```
+yii migrate/up
+```
+
 ## Настройка хранилища изображений
 
 Для хранения изображений используется компонент `snewer/yii2-storage`.
