@@ -17,38 +17,38 @@
         var modalHtml =
             // @formatter:off
             '<div class="image-upload-widget-modal modal inmodal" tabindex="-1" aria-hidden="true">' +
-                '<div class="modal-dialog">' +
-                    '<div class="modal-content animated bounceInRight">' +
-                            '<div class="modal-footer" style="border-top: none">' +
-                                '<h5 class="pull-left">Загрузка изображения</h5>' +
-                                '<button type="button" class="image-upload-widget-modal-rotate-right-btn btn btn-primary">' +
-                                    '<span class="fa fa-rotate-right"></span>' +
-                                '</button>' +
-                                '<button type="button" class="image-upload-widget-modal-rotate-left-btn btn btn-primary">' +
-                                    '<span class="fa fa-rotate-left"></span>' +
-                                '</button>' +
-                            '</div>' +
-                            '<table style="width: 100%">' +
-                                '<tbody>' +
-                                    '<tr style="vertical-align: top">' +
-                                        '<td>' +
-                                            '<div class="cropper-wrapper">' +
-                                                '<img src="#" style="display: none">' +
-                                            '</div>' +
-                                        '</td>' +
-                                    '</tr>' +
-                                '</tbody>' +
-                            '</table>' +
-                            '<div class="modal-footer" style="border-top: none">' +
-                                '<button type="button" class="btn btn-white" data-dismiss="modal">Отмена</button>' +
-                                '<button type="button" class="btn btn-primary ladda-button image-upload-widget-modal-upload-btn" data-style="expand-right">' +
-                                    'Зарузить выбранное' +
-                                '</button>' +
-                            '</div>' +
-                    '</div>' +
-                '</div>' +
+            '<div class="modal-dialog">' +
+            '<div class="modal-content animated bounceInRight">' +
+            '<div class="modal-footer" style="border-top: none">' +
+            '<h5 class="pull-left">Загрузка изображения</h5>' +
+            '<button type="button" class="image-upload-widget-modal-rotate-right-btn btn btn-primary">' +
+            '<span class="fa fa-rotate-right"></span>' +
+            '</button>' +
+            '<button type="button" class="image-upload-widget-modal-rotate-left-btn btn btn-primary">' +
+            '<span class="fa fa-rotate-left"></span>' +
+            '</button>' +
+            '</div>' +
+            '<table style="width: 100%">' +
+            '<tbody>' +
+            '<tr style="vertical-align: top">' +
+            '<td>' +
+            '<div class="cropper-wrapper">' +
+            '<img src="#" style="display: none">' +
+            '</div>' +
+            '</td>' +
+            '</tr>' +
+            '</tbody>' +
+            '</table>' +
+            '<div class="modal-footer" style="border-top: none">' +
+            '<button type="button" class="btn btn-white" data-dismiss="modal">Отмена</button>' +
+            '<button type="button" class="btn btn-primary ladda-button image-upload-widget-modal-upload-btn" data-style="expand-right">' +
+            'Зарузить выбранное' +
+            '</button>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
             '</div>';
-            // @formatter:on
+        // @formatter:on
 
         var $modal = $(modalHtml);
 
@@ -63,17 +63,23 @@
         var $widget = $(
             // @formatter:off
             '<div class="image-upload-widget">' +
-                '<div class="uploaded-image-container-wrapper">' +
-                    '<div class="uploaded-image-container">' +
-                        '<div class="uploaded-image-preview">' +
-                            '<img src="' + options.emptyImage + '">' +
-                        '</div>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="image-upload-tools">' +
-                    '<span class="image-upload-tools-clickable select-image-from-device">Выбрать файл с компьютера</span> ' +
-                    '<span class="image-upload-tools-clickable select-image-from-url">или по URL</span>' +
-                '</div>' +
+            '<div class="uploaded-image-container-wrapper">' +
+            '<div class="uploaded-image-container">' +
+            '<div class="uploaded-image-preview">' +
+            '<img src="' + options.emptyImage + '">' +
+            '</div>' +
+            // Для того что бы блоки с картинкой и без были одной высоты.
+            '<div class="uploaded-image-toolbar">' +
+            '<span style="visibility: hidden" title="Обрезать изображение" class="edit fa fa-crop"></span>' +
+            '<span  style="visibility: hidden" title="Удалить изображение" class="remove fa fa-times"></span>' +
+            '<div class="clearfix"></div>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="image-upload-tools">' +
+            '<span class="image-upload-tools-clickable select-image-from-device">Выбрать файл с компьютера</span> ' +
+            '<span class="image-upload-tools-clickable select-image-from-url">или по URL</span>' +
+            '</div>' +
             '</div>'
             // @formatter:on
         );
@@ -165,18 +171,18 @@
         function showUploadedImage(image) {
             var $elem = $(
                 // @formatter:off
-                    '<div class="uploaded-image-container">' +
-                        '<div class="uploaded-image-preview">' +
-                            '<a href="' + image.image.url + '" target="_blank" style="display: block">' +
-                                '<img src="' + image.preview.url + '">' +
-                            '</a>' +
-                        '</div>' +
-                        '<div class="uploaded-image-toolbar">' +
-                            '<span title="Обрезать изображение" class="edit fa fa-crop"></span>' +
-                            '<span title="Удалить изображение" class="remove fa fa-times"></span>' +
-                            '<div class="clearfix"></div>' +
-                        '</div>' +
-                    '</div>'
+                '<div class="uploaded-image-container">' +
+                '<div class="uploaded-image-preview">' +
+                '<a href="' + image.image.url + '" target="_blank" style="display: block">' +
+                '<img src="' + image.preview.url + '">' +
+                '</a>' +
+                '</div>' +
+                '<div class="uploaded-image-toolbar">' +
+                '<span title="Обрезать изображение" class="edit fa fa-crop"></span>' +
+                '<span title="Удалить изображение" class="remove fa fa-times"></span>' +
+                '<div class="clearfix"></div>' +
+                '</div>' +
+                '</div>'
                 // @formatter:on
             );
             $widgetImageContainer.html($elem);
