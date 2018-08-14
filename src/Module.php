@@ -13,7 +13,6 @@ use yii\base\InvalidConfigException;
  */
 class Module extends \yii\base\Module
 {
-
     /**
      * @var string|\snewer\storage\StorageManager
      */
@@ -27,7 +26,7 @@ class Module extends \yii\base\Module
 
     public $previewsQuality = 80;
 
-    public $driver = 'GD';
+    public $driver;
 
     public $controllerAccess;
 
@@ -40,9 +39,19 @@ class Module extends \yii\base\Module
         if ($this->previewsStoreBucketName === null) {
             $this->previewsStoreBucketName = $this->imagesStoreBucketName;
         }
-        if (!in_array($this->driver, ['GD', 'Imagick'])) {
-            throw new InvalidConfigException('Поддерживаются только следующие графические библиотеки: GD, Imagick.');
+
+        if ($this->driver === null) {
+            if (extension_loaded('imagick') || class_exists('Imagick')) {
+                $this->driver = 'Imagick';
+            } else {
+                $this->driver = 'GD';
+            }
+        } else {
+            if (!in_array($this->driver, ['GD', 'Imagick'])) {
+                throw new InvalidConfigException('Поддерживаются только следующие графические библиотеки: GD, Imagick.');
+            }
         }
+
         $this->imagesQuality = min(max(ceil($this->imagesQuality), 10), 100);
         $this->previewsQuality = min(max(ceil($this->previewsQuality), 10), 100);
         if ($this->controllerAccess === null) {
@@ -78,5 +87,4 @@ class Module extends \yii\base\Module
             return $this->_storage;
         }
     }
-
 }
