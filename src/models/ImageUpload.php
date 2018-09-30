@@ -12,6 +12,11 @@ class ImageUpload
     use ModuleTrait;
 
     /**
+     * @var ImageManager
+     */
+    private $_imageManager;
+
+    /**
      * @var \Intervention\Image\Image
      */
     public $image;
@@ -27,8 +32,8 @@ class ImageUpload
      */
     private function __construct($source)
     {
-        $imageManager = new ImageManager(['driver' => $this->getModule()->driver]);
-        $this->image = $imageManager->make($source);
+        $this->_imageManager = new ImageManager(['driver' => $this->getModule()->driver]);
+        $this->image = $this->_imageManager->make($source);
     }
 
     /**
@@ -78,6 +83,13 @@ class ImageUpload
         $image = new Image();
         $storageModel = ImageBucket::findOrCreateByName($storageName);
         $image->bucket_id = $storageModel->id;
+        // Когда загружается прозрачное изображение и сохраняется как JPEG, то его фон заливается черным цветом.
+        // Для решения данной проблемы накладываем его на полотно с белым фоном.
+        if (!$supportAC) {
+            $backgroundImage = $this->_imageManager->canvas($this->image->width(), $this->image->height(), '#FFFFFF');
+            $backgroundImage->insert($this->image);
+            $this->image = $backgroundImage;
+        }
         $source = trim($this->image->encode($supportAC ? 'png' : 'jpeg', $quality));
         $path = $image->bucket->upload($source, $supportAC ? 'png' : 'jpg');
         $image->path = $path;
