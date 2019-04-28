@@ -11,6 +11,11 @@ class m180211_174817_init_images_module extends Migration
      */
     public function safeUp()
     {
+        $tableOptions = null;
+        if ($this->db->driverName === 'mysql') {
+            $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE=InnoDB';
+        }
+
         $this->createTable('{{%images}}', [
             'id' => $this->primaryKey()->unsigned(),
             'parent_id' => $this->integer()->unsigned(),
@@ -23,13 +28,13 @@ class m180211_174817_init_images_module extends Migration
             'quality' => $this->integer(3)->unsigned(),
             'uploaded_at' => $this->integer()->unsigned(),
             'uploaded_by' => $this->integer()->unsigned()
-        ]);
+        ], $tableOptions);
         $this->createIndex('in_images$parent_id', '{{%images}}', 'parent_id');
 
         $this->createTable('{{%images_buckets}}', [
             'id' => $this->primaryKey()->unsigned(),
             'name' => $this->string()
-        ]);
+        ], $tableOptions);
         $this->createIndex('un_images_buckets$name', '{{%images_buckets}}', 'name', true);
     }
 
