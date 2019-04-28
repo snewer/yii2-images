@@ -42,7 +42,7 @@
             '<div class="modal-footer" style="border-top: none">' +
             '<button type="button" class="btn btn-white" data-dismiss="modal">Отмена</button>' +
             '<button type="button" class="btn btn-primary ladda-button image-upload-widget-modal-upload-btn" data-style="expand-right">' +
-            'Зарузить выбранное' +
+            'Загрузить выбранное' +
             '</button>' +
             '</div>' +
             '</div>' +
