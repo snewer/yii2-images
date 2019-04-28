@@ -159,7 +159,7 @@
                 image.src = '';
                 if (uploadRes.success === true) {
                     showUploadedImage(uploadRes);
-                    $input.val(uploadRes.image.id);
+                    $input.val(uploadRes.image.id).trigger('change');
                     def.resolve(uploadRes);
                 } else {
                     def.reject();
@@ -196,7 +196,7 @@
             });
             $elem.find('.remove').on('click', function () {
                 if (!confirm('Удалить?')) return;
-                $input.val('');
+                $input.val('').trigger('change');
                 var html = '<div class="uploaded-image-container-wrapper">' +
                     '<div class="uploaded-image-container">' +
                     '<div class="uploaded-image-preview">' +

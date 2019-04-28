@@ -70,3 +70,7 @@
     color: #337ab7;
     text-decoration: underline;
 }
+
+.has-error .image-upload-widget {
+    border-color: #a94442;
+}
