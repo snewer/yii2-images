@@ -167,10 +167,10 @@ class ImageUploadWidget extends InputWidget
             $this->getImageUrl = Url::to(['/' . $this->moduleId . '/image/get']);
         }
         if ($this->uploadImageUrl === null) {
-            $this->uploadImageUrl = Url::to(['/' . $this->moduleId . '/image/proxy']);
+            $this->uploadImageUrl = Url::to(['/' . $this->moduleId . '/image/upload']);
         }
         if ($this->proxyImageUrl === null) {
-            $this->proxyImageUrl = Url::to(['/' . $this->moduleId . '/image/upload']);
+            $this->proxyImageUrl = Url::to(['/' . $this->moduleId . '/image/proxy']);
         }
     }
 
@@ -179,8 +179,8 @@ class ImageUploadWidget extends InputWidget
         $options = [
             'urls' => [
                 'getImage' => $this->getImageUrl,
-                'imageProxy' => $this->uploadImageUrl,
-                'imageUpload' => $this->proxyImageUrl
+                'imageProxy' => $this->proxyImageUrl,
+                'imageUpload' => $this->uploadImageUrl
             ],
             'aspectRatio' => (float)$this->aspectRatio,
             'supportAC' => (bool)$this->supportAC,
