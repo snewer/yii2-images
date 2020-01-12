@@ -31,12 +31,29 @@ class ResizeBackgroundImage extends Resizer
 
     public $background;
 
+    private function getImageHash($image)
+    {
+        if (empty($image)) {
+            return 'self';
+        } elseif (is_string($image)) {
+            return md5($image);
+        } elseif (is_resource($image)) {
+            ob_start();
+            imagejpeg($image);
+            $binary = ob_get_contents();
+            ob_end_clean();
+            return md5($binary);
+        }
+
+        return md5(serialize($image));
+    }
+
     public function getHash()
     {
         $params = [
             $this->width,
             $this->height,
-            $this->background === null ? 'self' : md5($this->background),
+            $this->getImageHash($this->background),
             $this->greyscale ? 1 : 0,
             $this->blur,
             $this->pixelate
