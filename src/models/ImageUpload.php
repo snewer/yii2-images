@@ -14,7 +14,7 @@ class ImageUpload
     /**
      * @var ImageManager
      */
-    private $_imageManager;
+    private $imageManager;
 
     /**
      * @var \Intervention\Image\Image
@@ -22,18 +22,17 @@ class ImageUpload
     public $image;
 
     /**
-     * @var Image
-     */
-    public $model;
-
-    /**
      * ImageUpload constructor.
      * @param $source
      */
     private function __construct($source)
     {
-        $this->_imageManager = new ImageManager(['driver' => $this->getModule()->driver]);
-        $this->image = $this->_imageManager->make($source);
+        if ($source instanceof \Intervention\Image\Image) {
+            $this->image = $source;
+        } else {
+            $this->imageManager = new ImageManager(['driver' => 'Imagick']);
+            $this->image = $this->imageManager->make($source);
+        }
     }
 
     /**
@@ -53,9 +52,7 @@ class ImageUpload
      */
     public static function extend(Image $image)
     {
-        $obj = new self($image->source);
-        $obj->model = $image;
-        return $obj;
+        return new self($image->source);
     }
 
     /**
@@ -77,28 +74,41 @@ class ImageUpload
      * @param integer $quality - Качество изображения
      * @return Image
      */
-    public function upload($storageName, $supportAC, $quality)
+    public function upload($storageName, $quality, $parentId = null, $previewHash = null)
     {
         $quality = min(max($quality, 30), 100);
-        $image = new Image();
-        $storageModel = ImageBucket::findOrCreateByName($storageName);
-        $image->bucket_id = $storageModel->id;
-        // Когда загружается прозрачное изображение и сохраняется как JPEG, то его фон заливается черным цветом.
-        // Для решения данной проблемы накладываем его на полотно с белым фоном.
-        if (!$supportAC) {
-            $backgroundImage = $this->_imageManager->canvas($this->image->width(), $this->image->height(), '#FFFFFF');
-            $backgroundImage->insert($this->image);
-            $this->image = $backgroundImage;
+
+        if ($this->getModule()->forceUseWebp) {
+            $format = 'webp';
+        } elseif ($this->getModule()->supportPng) {
+            if ($parentId !== null || $this->image->getCore()->getImageAlphaChannel() === \Imagick::ALPHACHANNEL_UNDEFINED) {
+                // Когда загружается прозрачное изображение и сохраняется как JPEG, то его фон заливается черным цветом.
+                // Для решения данной проблемы накладываем его на полотно с белым фоном.
+                //$jpgImage = $this->imageManager->canvas($this->image->width(), $this->image->height(), '#FFFFFF');
+                //$jpgImage->insert($this->image);
+                //$this->image = $jpgImage;
+                $format = 'jpg';
+            } else {
+                $format = 'png';
+            }
+        } else {
+            $format = 'jpg';
         }
-        $source = trim($this->image->encode($supportAC ? 'png' : 'jpeg', $quality));
-        $path = $image->bucket->upload($source, $supportAC ? 'png' : 'jpg');
+
+        $image = new Image();
+        $source = trim((string)$this->image->encode($format, $quality));
+        $image->source = $this->image;
+
+        $image->bucket_id = ImageBucket::findOrCreateByName($storageName)->id;
+        $path = $image->bucket->upload($source, $format);
         $image->path = $path;
-        $image->integrity = 'sha384-' . base64_encode(hash('sha384', $source, true));
         $image->quality = $quality;
         $image->width = $this->image->width();
         $image->height = $this->image->height();
-        $image->source = $source;
+        $image->parent_id = $parentId;
+        $image->preview_hash = $previewHash;
+
+        $image->save(false);
         return $image;
     }
-
 }

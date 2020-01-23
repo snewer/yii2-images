@@ -49,12 +49,7 @@ class UploadAction extends Action
         }
 
         // Загрузка оригинала изображения
-        $image = $imageUpload->upload(
-            $this->getModule()->imagesStoreBucketName,
-            isset($options['supportAC']) ? $this->isTrue($options['supportAC']) : false,
-            $this->getModule()->imagesQuality
-        );
-        $image->save(false);
+        $image = $imageUpload->upload($this->getModule()->imagesStoreBucketName, $this->getModule()->imagesQuality);
         $preview = $image->getPreviewBackgroundColor(300, 300);
         Yii::$app->response->format = Response::FORMAT_JSON;
         return [
@@ -62,13 +57,11 @@ class UploadAction extends Action
             'image' => [
                 'id' => $image->id,
                 'url' => $image->url,
-                'integrity' => $image->integrity,
                 'width' => $image->width,
                 'height' => $image->height
             ],
             'preview' => [
                 'url' => $preview->url,
-                'integrity' => $image->integrity,
                 'width' => $preview->width,
                 'height' => $preview->height
             ]

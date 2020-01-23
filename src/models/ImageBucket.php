@@ -55,7 +55,6 @@ class ImageBucket extends ActiveRecord
     public static function findById($id, $throwException = false)
     {
         self::loadBuckets();
-        $id = (int)$id;
         if (!isset(self::$_buckets[$id])) {
             if ($throwException) {
                 throw new ErrorException("Хранилище с идентификатором '{$id}' не найдено в базе данных.");

@@ -55,12 +55,6 @@ class ImageUploadWidget extends InputWidget
     public $bgColor = '#FFFFFF';
 
     /**
-     * Необходимоть поддержки альфа-канала изображения (прозрачности).
-     * @var bool
-     */
-    public $supportAC = false;
-
-    /**
      * Ссылка на изображение-заглушку.
      * @var string|null
      */
@@ -183,7 +177,6 @@ class ImageUploadWidget extends InputWidget
                 'imageUpload' => $this->uploadImageUrl
             ],
             'aspectRatio' => (float)$this->aspectRatio,
-            'supportAC' => (bool)$this->supportAC,
             'bgColor' => $this->bgColor,
             'emptyImage' => $this->emptyImage
         ];

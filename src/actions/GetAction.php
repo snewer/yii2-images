@@ -23,13 +23,11 @@ class GetAction extends Action
                     'image' => [
                         'id' => $image->id,
                         'url' => $image->url,
-                        'integrity' => $image->integrity,
                         'width' => $image->width,
                         'height' => $image->height
                     ],
                     'preview' => [
                         'url' => $preview->url,
-                        'integrity' => $image->integrity,
                         'width' => $preview->width,
                         'height' => $preview->height
                     ]

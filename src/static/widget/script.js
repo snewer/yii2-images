@@ -151,7 +151,6 @@
                 source: image.src,
                 options: {
                     aspectRatio: options.aspectRatio,
-                    supportAC: options.supportAC,
                     bgColor: options.bgColor,
                     crop: image.crop || {}
                 }

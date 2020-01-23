@@ -80,7 +80,7 @@ class ResizeBackgroundImage extends Resizer
     {
         $original = clone $this->image;
         if ($this->background !== null) {
-            $imageManager = new ImageManager(['driver' => $this->getModule()->driver]);
+            $imageManager = new ImageManager(['driver' => 'Imagick']);
             $this->image = $imageManager->make($this->background);
         }
         $this->image->fit($this->width, $this->height);

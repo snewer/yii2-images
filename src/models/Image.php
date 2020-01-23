@@ -17,7 +17,6 @@ use snewer\images\ModuleTrait;
  * @property $parent_id
  * @property $bucket_id
  * @property $path
- * @property $integrity
  * @property $width
  * @property $height
  * @property $quality
@@ -28,7 +27,7 @@ use snewer\images\ModuleTrait;
  * @property $previews
  * @property \snewer\storage\AbstractBucket $bucket
  * @property string $bucketName
- * @property string $source
+ * @property $source
  */
 class Image extends ActiveRecord
 {
@@ -39,12 +38,12 @@ class Image extends ActiveRecord
     {
         return [
             [
-                'class' => TimestampBehavior::className(),
+                'class' => TimestampBehavior::class,
                 'createdAtAttribute' => 'uploaded_at',
                 'updatedAtAttribute' => false
             ],
             [
-                'class' => BlameableBehavior::className(),
+                'class' => BlameableBehavior::class,
                 'createdByAttribute' => 'uploaded_by',
                 'updatedByAttribute' => false
             ]
@@ -96,17 +95,6 @@ class Image extends ActiveRecord
     }
 
     /**
-     * Поддерживает ли данное изображение альфа-канал.
-     * То есть имеет ли изображение формат PNG.
-     * @return boolean
-     */
-    public function isSupportsAC()
-    {
-        $path = explode('.', $this->path);
-        return array_pop($path) == 'png';
-    }
-
-    /**
      * @return \yii\db\ActiveQuery
      */
     public function getPreviews()
@@ -116,7 +104,7 @@ class Image extends ActiveRecord
 
     /**
      * Метод для получения существующего превью изображения по указанному хэшу.
-     * Вернется false, если првеью не существует.
+     * Вернется false, если превью не существует.
      * @param $hash
      * @return false|Image
      */
@@ -142,12 +130,11 @@ class Image extends ActiveRecord
         $uploader->applyTool($resizer);
         $preview = $uploader->upload(
             $this->getModule()->previewsStoreBucketName,
-            $this->isSupportsAC(),
-            $this->getModule()->previewsQuality
+            $this->getModule()->previewsQuality,
+            $this->id,
+            $resizer->getHash()
         );
-        $preview->parent_id = $this->id;
-        $preview->preview_hash = $resizer->getHash();
-        $preview->save(false);
+
         $relatedPreviews = $this->previews ?: [];
         $relatedPreviews[] = $preview;
         $this->populateRelation('previews', $relatedPreviews);

@@ -26,7 +26,9 @@ class Module extends \yii\base\Module
 
     public $previewsQuality = 80;
 
-    public $driver;
+    public $supportPng = true;
+
+    public $forceUseWebp = false;
 
     public $controllerAccess;
 
@@ -38,24 +40,6 @@ class Module extends \yii\base\Module
         }
         if ($this->previewsStoreBucketName === null) {
             $this->previewsStoreBucketName = $this->imagesStoreBucketName;
-        }
-
-        if ($this->driver === null) {
-            if (extension_loaded('imagick') || class_exists('Imagick')) {
-                $this->driver = 'Imagick';
-            } else {
-                $this->driver = 'Gd';
-            }
-        } else {
-            if (!in_array($this->driver, ['Gd', 'GD', 'Imagick', 'imagick'])) {
-                throw new InvalidConfigException('Поддерживаются только следующие графические библиотеки: GD, Imagick.');
-            } else {
-                // @see https://github.com/snewer/yii2-images/issues/5
-                $this->driver = strtr($this->driver, [
-                    'GD' => 'Gd',
-                    'imagick' => 'Imagick'
-                ]);
-            }
         }
 
         $this->imagesQuality = min(max(ceil($this->imagesQuality), 10), 100);
