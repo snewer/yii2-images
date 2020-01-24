@@ -2,6 +2,7 @@
 
 namespace snewer\images\widgets;
 
+use snewer\images\Module;
 use Yii;
 use yii\widgets\InputWidget;
 use yii\helpers\Html;
@@ -11,15 +12,6 @@ use snewer\images\assets\WidgetAsset;
 
 class ImageUploadWidget extends InputWidget
 {
-
-    /**
-     * Идентификатор используемого модуля.
-     * Используется для генерации ссылок по-умолчанию
-     * в методе init().
-     * @var string
-     */
-    public $moduleId = 'images';
-
     /**
      * Ссылка на действие получения изображения.
      * @see \snewer\images\actions\GetAction
@@ -158,13 +150,13 @@ class ImageUploadWidget extends InputWidget
         parent::init();
         $this->registerAssets();
         if ($this->getImageUrl === null) {
-            $this->getImageUrl = Url::to(['/' . $this->moduleId . '/image/get']);
+            $this->getImageUrl = Url::to(['/' . Module::$_id . '/image/get']);
         }
         if ($this->uploadImageUrl === null) {
-            $this->uploadImageUrl = Url::to(['/' . $this->moduleId . '/image/upload']);
+            $this->uploadImageUrl = Url::to(['/' . Module::$_id . '/image/upload']);
         }
         if ($this->proxyImageUrl === null) {
-            $this->proxyImageUrl = Url::to(['/' . $this->moduleId . '/image/proxy']);
+            $this->proxyImageUrl = Url::to(['/' . Module::$_id . '/image/proxy']);
         }
     }
 

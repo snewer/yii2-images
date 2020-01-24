@@ -37,7 +37,7 @@ class ImageBucket extends ActiveRecord
             if (self::$_buckets) {
                 self::$_bucketsNamesToIdMap = [];
                 foreach (self::$_buckets as $id => $bucket) {
-                    self::$_bucketsNamesToIdMap[$bucket->name] = (int)$id;
+                    self::$_bucketsNamesToIdMap[$bucket->name] = $id;
                 }
             } else {
                 self::$_buckets = [];
@@ -59,7 +59,7 @@ class ImageBucket extends ActiveRecord
             if ($throwException) {
                 throw new ErrorException("Хранилище с идентификатором '{$id}' не найдено в базе данных.");
             } else {
-                return false;
+                return null;
             }
         }
         return self::$_buckets[$id];
@@ -78,7 +78,7 @@ class ImageBucket extends ActiveRecord
             if ($throwException) {
                 throw new ErrorException("Хранилище с названием '{$name}' не найдено в базе данных.");
             } else {
-                return false;
+                return null;
             }
         }
         return self::$_buckets[self::$_bucketsNamesToIdMap[$name]];
@@ -86,17 +86,17 @@ class ImageBucket extends ActiveRecord
 
     /**
      * @param $name
-     * @return array|null|self
+     * @return self
      */
     public static function findOrCreateByName($name)
     {
         $model = self::findByName($name, false);
-        if (!$model) {
+        if ($model === null) {
             $model = new self;
             $model->name = $name;
             $model->save(false);
-            self::$_buckets[(int)$model->id] = $model;
-            self::$_bucketsNamesToIdMap[$name] = (int)$model->id;
+            self::$_buckets[$model->id] = $model;
+            self::$_bucketsNamesToIdMap[$name] = $model->id;
         }
         return $model;
     }

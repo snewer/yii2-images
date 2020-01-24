@@ -13,6 +13,8 @@ use yii\base\InvalidConfigException;
  */
 class Module extends \yii\base\Module
 {
+    public static $_id;
+
     /**
      * @var string|\snewer\storage\StorageManager
      */
@@ -31,6 +33,8 @@ class Module extends \yii\base\Module
     public $forceUseWebp = false;
 
     public $controllerAccess;
+
+    public $previewsMap = [];
 
     public function init()
     {

@@ -70,8 +70,9 @@ class ImageUpload
     /**
      * Внимание! Метод не сохраняет возвращаемую модель в базу данных.
      * @param string $storageName - Название хранилища, в которое необходимо загрузить изображение
-     * @param bool $supportAC - Нужна ли поддержка альфа канала
      * @param integer $quality - Качество изображения
+     * @param null|integer $parentId
+     * @param null|string $previewHash
      * @return Image
      */
     public function upload($storageName, $quality, $parentId = null, $previewHash = null)
@@ -95,12 +96,12 @@ class ImageUpload
             $format = 'jpg';
         }
 
-        $image = new Image();
         $source = trim((string)$this->image->encode($format, $quality));
-        $image->source = $this->image;
+        $path = $this->getModule()->getStorage()->getBucket($storageName)->upload($source, $format);
 
+        $image = new Image();
+        $image->source = $this->image;
         $image->bucket_id = ImageBucket::findOrCreateByName($storageName)->id;
-        $path = $image->bucket->upload($source, $format);
         $image->path = $path;
         $image->quality = $quality;
         $image->width = $this->image->width();
@@ -109,6 +110,7 @@ class ImageUpload
         $image->preview_hash = $previewHash;
 
         $image->save(false);
+
         return $image;
     }
 }

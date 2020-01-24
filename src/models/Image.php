@@ -50,6 +50,17 @@ class Image extends ActiveRecord
         ];
     }
 
+    public function init()
+    {
+        parent::init();
+        $this->on(self::EVENT_AFTER_DELETE, function () {
+            $this->getBucket()->delete($this->path);
+            foreach ($this->previews as $preview) {
+                $preview->getBucket()->delete($this->path);
+            }
+        });
+    }
+
     public static function tableName()
     {
         return '{{%images}}';
@@ -99,14 +110,14 @@ class Image extends ActiveRecord
      */
     public function getPreviews()
     {
-        return $this->hasMany(self::className(), ['parent_id' => 'id']);
+        return $this->hasMany(self::class, ['parent_id' => 'id']);
     }
 
     /**
      * Метод для получения существующего превью изображения по указанному хэшу.
-     * Вернется false, если превью не существует.
+     * Вернется null, если превью не существует.
      * @param $hash
-     * @return false|Image
+     * @return null|Image
      */
     private function findPreview($hash)
     {
@@ -116,7 +127,7 @@ class Image extends ActiveRecord
                 return $preview;
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -151,7 +162,7 @@ class Image extends ActiveRecord
     {
         $resizer = is_object($configuration) ? $configuration : Yii::createObject($configuration);
         $preview = $this->findPreview($resizer->getHash());
-        if (!$preview) {
+        if ($preview === null) {
             $preview = $this->createPreview($resizer);
             $relatedPreviews = $this->previews ?: [];
             $relatedPreviews[] = $preview;

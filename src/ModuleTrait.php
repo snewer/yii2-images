@@ -17,7 +17,7 @@ trait ModuleTrait
      */
     public function getModule()
     {
-        return Yii::$app->getModule('images', true);
+        return Yii::$app->getModule(Module::$_id, true);
     }
 
 }
