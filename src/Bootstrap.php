@@ -2,7 +2,6 @@
 
 namespace snewer\images;
 
-use Yii;
 use yii\base\Application;
 use yii\base\BootstrapInterface;
 
@@ -10,11 +9,6 @@ class Bootstrap implements BootstrapInterface
 {
     private function getModule(Application $app)
     {
-        if ($app->hasModule('images') && ($module = $app->getModule('images')) instanceof Module) {
-            Module::$_id = 'images';
-            return $module;
-        }
-
         foreach ($app->getModules() as $moduleName => $module) {
             if (is_array($module)) {
                 if ($module['class'] === Module::class) {

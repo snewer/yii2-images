@@ -69,15 +69,19 @@ class ImageUpload
 
     /**
      * Внимание! Метод не сохраняет возвращаемую модель в базу данных.
-     * @param string $storageName - Название хранилища, в которое необходимо загрузить изображение
-     * @param integer $quality - Качество изображения
      * @param null|integer $parentId
      * @param null|string $previewHash
      * @return Image
      */
-    public function upload($storageName, $quality, $parentId = null, $previewHash = null)
+    public function upload($parentId = null, $previewHash = null)
     {
-        $quality = min(max($quality, 30), 100);
+        if ($parentId === null) {
+            $storageName = $this->getModule()->imagesStoreBucketName;
+            $quality = $this->getModule()->imagesQuality;
+        } else {
+            $storageName = $this->getModule()->previewsStoreBucketName;
+            $quality = $this->getModule()->previewsQuality;
+        }
 
         if ($this->getModule()->forceUseWebp) {
             $format = 'webp';
@@ -97,7 +101,7 @@ class ImageUpload
         }
 
         $source = trim((string)$this->image->encode($format, $quality));
-        $path = $this->getModule()->getStorage()->getBucket($storageName)->upload($source, $format);
+        $path = $this->getModule()->get('storage')->getBucket($storageName)->upload($source, $format);
 
         $image = new Image();
         $image->source = $this->image;

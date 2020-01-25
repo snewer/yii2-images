@@ -49,7 +49,7 @@ class UploadAction extends Action
         }
 
         // Загрузка оригинала изображения
-        $image = $imageUpload->upload($this->getModule()->imagesStoreBucketName, $this->getModule()->imagesQuality);
+        $image = $imageUpload->upload();
         $preview = $image->getPreviewBackgroundColor(300, 300);
         Yii::$app->response->format = Response::FORMAT_JSON;
         return [

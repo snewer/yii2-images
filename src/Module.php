@@ -2,7 +2,7 @@
 
 namespace snewer\images;
 
-use Yii;
+use snewer\storage\StorageManager;
 use yii\filters\AccessControl;
 use yii\base\InvalidConfigException;
 
@@ -15,24 +15,21 @@ class Module extends \yii\base\Module
 {
     public static $_id;
 
-    /**
-     * @var string|\snewer\storage\StorageManager
-     */
-    private $_storage = 'storage';
-
     public $imagesStoreBucketName;
-
-    public $imagesQuality = 100;
 
     public $previewsStoreBucketName;
 
-    public $previewsQuality = 80;
+    public $imagesQuality = 85;
+
+    public $previewsQuality = 85;
 
     public $supportPng = true;
 
     public $forceUseWebp = false;
 
     public $controllerAccess;
+
+    public $buckets = [];
 
     public $previewsMap = [];
 
@@ -46,11 +43,18 @@ class Module extends \yii\base\Module
             $this->previewsStoreBucketName = $this->imagesStoreBucketName;
         }
 
+        $this->setComponents([
+            'storage' => [
+                'class' => StorageManager::class,
+                'buckets' => $this->buckets,
+            ]
+        ]);
+
         $this->imagesQuality = min(max(ceil($this->imagesQuality), 10), 100);
         $this->previewsQuality = min(max(ceil($this->previewsQuality), 10), 100);
         if ($this->controllerAccess === null) {
             $this->controllerAccess = [
-                'class' => AccessControl::className(),
+                'class' => AccessControl::class,
                 'rules' => [
                     [
                         'allow' => true,
@@ -58,27 +62,6 @@ class Module extends \yii\base\Module
                     ]
                 ]
             ];
-        }
-    }
-
-    public function setStorage($value)
-    {
-        if (is_string($value)) {
-            $this->_storage = $value;
-        } else {
-            $this->_storage = Yii::createObject($value);
-        }
-    }
-
-    /**
-     * @return \snewer\storage\StorageManager
-     */
-    public function getStorage()
-    {
-        if (is_string($this->_storage)) {
-            return Yii::$app->get($this->_storage, true);
-        } else {
-            return $this->_storage;
         }
     }
 }

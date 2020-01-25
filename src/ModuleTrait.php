@@ -11,7 +11,6 @@ use Yii;
  */
 trait ModuleTrait
 {
-
     /**
      * @return Module
      */
@@ -19,5 +18,4 @@ trait ModuleTrait
     {
         return Yii::$app->getModule(Module::$_id, true);
     }
-
 }

@@ -3,15 +3,17 @@
 namespace snewer\images\traits;
 
 use snewer\images\models\Image;
-use snewer\images\Module;
-use snewer\images\tools\resizers\ResizeBestFit;
+use snewer\images\ModuleTrait;
+use snewer\images\tools\resizers\ResizeBackgroundColor;
 use Yii;
 
 trait GenerateImagePreviewsTrait
 {
+    use ModuleTrait;
+
     public function generateImagePreviews()
     {
-        $map = Yii::$app->getModule(Module::$_id)->previewsMap;
+        $map = $this->getModule()->previewsMap;
         foreach ($map as $className => $previews) {
             if ($className === self::class) {
                 foreach ($previews as $relationName => $previewConfigurations) {
@@ -20,7 +22,7 @@ trait GenerateImagePreviewsTrait
                     if ($image) {
                         foreach ($previewConfigurations as $configuration) {
                             if (!isset($configuration['class'])) {
-                                $configuration['class'] = ResizeBestFit::class;
+                                $configuration['class'] = ResizeBackgroundColor::class;
                             }
                             $image->getPreviewByConfiguration($configuration);
                         }

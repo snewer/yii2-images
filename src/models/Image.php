@@ -22,9 +22,10 @@ use snewer\images\ModuleTrait;
  * @property $quality
  * @property $uploaded_at
  * @property $uploaded_by
+ * @property $is_optimized
  *
  * @property $url
- * @property $previews
+ * @property Image[] $previews
  * @property \snewer\storage\AbstractBucket $bucket
  * @property string $bucketName
  * @property $source
@@ -82,7 +83,7 @@ class Image extends ActiveRecord
      */
     public function getBucket()
     {
-        return $this->getModule()->getStorage()->getBucket($this->bucketName);
+        return $this->getModule()->get('storage')->getBucket($this->bucketName);
     }
 
     public function getUrl()
@@ -139,12 +140,7 @@ class Image extends ActiveRecord
         $resizer = is_object($configuration) ? $configuration : Yii::createObject($configuration);
         $uploader = ImageUpload::extend($this);
         $uploader->applyTool($resizer);
-        $preview = $uploader->upload(
-            $this->getModule()->previewsStoreBucketName,
-            $this->getModule()->previewsQuality,
-            $this->id,
-            $resizer->getHash()
-        );
+        $preview = $uploader->upload($this->id, $resizer->getHash());
 
         $relatedPreviews = $this->previews ?: [];
         $relatedPreviews[] = $preview;
