@@ -12,7 +12,8 @@
   "require": {
     "yiisoft/yii2": "^2.0.13",
     "intervention/image": "^2.3",
-    "snewer/yii2-storage": "^4.0"
+    "snewer/yii2-storage": "^4.0",
+    "spatie/image-optimizer": "^1.2"
   },
   "autoload": {
     "psr-4": {

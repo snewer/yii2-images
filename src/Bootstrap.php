@@ -16,7 +16,13 @@ class Bootstrap implements BootstrapInterface
         }
 
         foreach ($app->getModules() as $moduleName => $module) {
-            if (($module = $app->getModule($moduleName)) instanceof Module) {
+            if (is_array($module)) {
+                if ($module['class'] === Module::class) {
+                    $module = $app->getModule($moduleName);
+                    Module::$_id = $moduleName;
+                    return $module;
+                }
+            } elseif (($module = $app->getModule($moduleName)) instanceof Module) {
                 Module::$_id = $moduleName;
                 return $module;
             }
